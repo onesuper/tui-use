@@ -132,8 +132,10 @@ export class Session {
     const screen = lines.join("\n");
     const changed = screen !== this.lastSnapshot;
     this.lastSnapshot = screen;
+    // Prefix each line with its row number so agents can correlate cursor.y with screen content
+    const numberedScreen = lines.map((line, i) => `${i}: ${line}`).join("\n");
     return {
-      screen,
+      screen: numberedScreen,
       cursor: { x: buf.cursorX, y: buf.cursorY },
       changed,
     };
