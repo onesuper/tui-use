@@ -9,8 +9,9 @@
 
 export type Request =
   | StartRequest
+  | SnapshotRequest
+  | WaitRequest
   | SendRequest
-  | ReadRequest
   | KillRequest
   | ListRequest;
 
@@ -23,17 +24,22 @@ export interface StartRequest {
   rows?: number;
 }
 
+export interface SnapshotRequest {
+  type: "snapshot";
+  session_id: string;
+}
+
+export interface WaitRequest {
+  type: "wait";
+  session_id: string;
+  timeout_ms?: number;   // default 3000
+  until?: string;        // regex — block until screen contains pattern
+}
+
 export interface SendRequest {
   type: "send";
   session_id: string;
   input: string;
-}
-
-export interface ReadRequest {
-  type: "read";
-  session_id: string;
-  timeout_ms?: number;      // default 1500
-  wait_for?: string;        // regex pattern — block until matched or timeout
 }
 
 export interface KillRequest {
@@ -49,8 +55,8 @@ export interface ListRequest {
 
 export type Response =
   | StartResponse
+  | ScreenResponse
   | SendResponse
-  | ReadResponse
   | KillResponse
   | ListResponse
   | ErrorResponse;
@@ -60,17 +66,20 @@ export interface StartResponse {
   session_id: string;
 }
 
+/** Returned by both `snapshot` and `wait` */
+export interface ScreenResponse {
+  type: "snapshot" | "wait";
+  session_id: string;
+  screen: string;                  // rendered screen content, trailing empty lines removed
+  cursor: { x: number; y: number };
+  changed: boolean;                // true if screen changed since last snapshot/wait
+  status: "running" | "exited";
+  exit_code: number | null;
+}
+
 export interface SendResponse {
   type: "send";
   ok: boolean;
-}
-
-export interface ReadResponse {
-  type: "read";
-  session_id: string;
-  output: string;
-  status: "running" | "exited";
-  exit_code: number | null;
 }
 
 export interface KillResponse {
@@ -89,7 +98,7 @@ export interface SessionInfo {
   command: string;
   status: "running" | "exited";
   exit_code: number | null;
-  start_time: number;   // unix timestamp ms
+  start_time: number;
 }
 
 export interface ErrorResponse {

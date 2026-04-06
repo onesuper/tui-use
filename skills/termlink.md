@@ -1,56 +1,82 @@
-# termlink — Interactive CLI Bridge
+# termlink — Interactive CLI Bridge for AI Agents
 
 Use `termlink` to operate interactive terminal programs that require keyboard input.
-This lets you drive prompts, REPLs, interactive installers, and TUI programs.
+Works with prompt-based CLIs, REPLs, interactive installers, and TUI apps (htop, vim, fzf, etc.).
 
 ## Core Workflow
 
 ```
-start → read (wait for prompt) → send → read → send → ... → kill
+start → wait → send → wait → send → wait → ... → kill
 ```
+
+Think of it like browser automation: `wait` is your screenshot, `send` is your click/type.
 
 ## Commands
 
 ### Start a session
 ```bash
-SID=$(termlink start "python myapp.py")
-# SID is now e.g. "abc12345"
+SID=$(termlink start python3 myapp.py)
+SID=$(termlink start -- python3 -c 'name=input("Name: "); print("Hi", name)')
+SID=$(termlink start htop)
 ```
 
-Options:
-- `--cwd <dir>` — working directory
-- `--label <name>` — human-readable label
+Options: `--cwd <dir>`, `--label <name>`, `--cols <n>`, `--rows <n>`
 
-### Read output
+---
+
+### Wait for screen to change
 ```bash
-termlink read $SID --wait-for "pattern"
+termlink wait $SID
 ```
 
-Returns JSON:
+Returns JSON with current screen content after the screen settles:
 ```json
 {
   "session_id": "abc12345",
-  "output": "Welcome!\nEnter your name: ",
+  "screen": "What is your name?\n> ",
+  "cursor": { "x": 2, "y": 1 },
+  "changed": true,
   "status": "running",
   "exit_code": null
 }
 ```
 
-**Always use `--wait-for` before sending input** — wait until the prompt appears:
+Options:
+- `--until <pattern>` — wait until screen contains regex pattern
+- `--timeout <ms>` — max wait time (default: 3000ms)
+
+**Always call `wait` before sending input** — it ensures the program is ready.
+
+---
+
+### Take an immediate snapshot
 ```bash
-termlink read $SID --wait-for "Enter your name"
+termlink snapshot $SID
 ```
 
-`--timeout <ms>` — max wait time (default 1500ms).
+Returns the current screen without waiting. Same JSON format as `wait`.
+Use when you want to check the current state without blocking.
+
+---
 
 ### Send input
 ```bash
-termlink send $SID "Alice\n"
+termlink send $SID "hello\n"        # text + Enter
+termlink send $SID "ctrl+c"         # interrupt
+termlink send $SID "arrow_down"     # navigate
+termlink send $SID "q"              # single key
 ```
 
-- Use `\n` for Enter key
-- Use `\t` for Tab
-- Use `\r` for carriage return (some programs need this instead of `\n`)
+**Supported special keys:**
+`ctrl+c`, `ctrl+d`, `ctrl+z`, `ctrl+a/b/e/f/k/l/u/w`
+`arrow_up`, `arrow_down`, `arrow_left`, `arrow_right`
+`page_up`, `page_down`, `home`, `end`
+`enter`, `tab`, `escape`, `backspace`, `delete`
+`f1`–`f10`
+
+**Text escapes:** `\n` = Enter, `\r` = carriage return, `\t` = Tab
+
+---
 
 ### List sessions
 ```bash
@@ -66,36 +92,23 @@ termlink kill $SID
 
 ## Rules for AI Agents
 
-1. **Always read before sending** — use `--wait-for` to ensure the program is waiting for input
-2. **Check `status`** — if `"exited"`, do not send more input; read remaining output instead
-3. **One interaction at a time** — send input, then read response before sending again
-4. **Use `\n` for Enter** — literal newline in the `send` argument
-5. **Kill when done** — always clean up sessions
+1. **wait before send** — always call `wait` first to confirm the program is ready
+2. **check `status`** — if `"exited"`, don't send more input
+3. **use `--until`** for slow-starting programs — `termlink wait $SID --until "pattern"`
+4. **kill when done** — always clean up sessions
 
 ---
 
-## Example: Interactive Python script
+## Example: Prompt-based CLI
 
 ```bash
-# Script prompts: "Enter your name: " then "Enter your age: "
-SID=$(termlink start "python ask_user.py")
+SID=$(termlink start python3 examples/ask.py)
 
-# Wait for first prompt
-termlink read $SID --wait-for "Enter your name"
-
-# Send name
+termlink wait $SID                    # wait for first prompt
 termlink send $SID "Alice\n"
-
-# Wait for second prompt
-termlink read $SID --wait-for "Enter your age"
-
-# Send age
+termlink wait $SID                    # wait for next prompt
 termlink send $SID "30\n"
-
-# Read final output
-termlink read $SID --timeout 2000
-
-# Clean up
+termlink wait $SID                    # get final output
 termlink kill $SID
 ```
 
@@ -104,38 +117,51 @@ termlink kill $SID
 ## Example: Python REPL
 
 ```bash
-SID=$(termlink start "python3")
+SID=$(termlink start python3)
 
-# Wait for >>> prompt
-termlink read $SID --wait-for ">>>"
-
-# Send a statement
+termlink wait $SID --until ">>>"
 termlink send $SID "x = 42\n"
-termlink read $SID --wait-for ">>>"
-
+termlink wait $SID --until ">>>"
 termlink send $SID "print(x * 2)\n"
-termlink read $SID --wait-for ">>>"
-# output will contain "84"
+termlink wait $SID --until ">>>"
+# screen will contain "84"
 
 termlink send $SID "exit()\n"
-termlink read $SID --timeout 1000
-
+termlink wait $SID
 termlink kill $SID
 ```
 
 ---
 
-## Example: Bash interactive script
+## Example: TUI app (htop)
 
 ```bash
-SID=$(termlink start "bash setup.sh")
+SID=$(termlink start htop --rows 40 --cols 200)
 
-termlink read $SID --wait-for "Install\? \[y/n\]"
+termlink wait $SID --until "PID"     # wait for htop to fully load
+termlink snapshot $SID               # inspect current screen
+
+termlink send $SID "arrow_down"      # navigate
+termlink wait $SID
+
+termlink send $SID "q"               # quit
+termlink wait $SID
+termlink kill $SID
+```
+
+---
+
+## Example: Interactive installer
+
+```bash
+SID=$(termlink start bash install.sh)
+
+termlink wait $SID --until "Install\?"
 termlink send $SID "y\n"
 
-termlink read $SID --wait-for "Enter install path"
+termlink wait $SID --until "install path"
 termlink send $SID "/usr/local\n"
 
-termlink read $SID --timeout 5000
+termlink wait $SID --timeout 10000   # installation may take a while
 termlink kill $SID
 ```

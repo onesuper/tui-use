@@ -16,8 +16,9 @@ import {
   Request,
   Response,
   StartRequest,
+  SnapshotRequest,
+  WaitRequest,
   SendRequest,
-  ReadRequest,
   KillRequest,
 } from "./protocol";
 
@@ -67,6 +68,42 @@ async function handleRequest(req: Request): Promise<Response> {
       return { type: "start", session_id: id };
     }
 
+    case "snapshot": {
+      const r = req as SnapshotRequest;
+      const session = sessions.get(r.session_id);
+      if (!session) {
+        return { type: "error", message: `Session not found: ${r.session_id}` };
+      }
+      const { screen, cursor, changed } = session.snapshot();
+      return {
+        type: "snapshot",
+        session_id: r.session_id,
+        screen,
+        cursor,
+        changed,
+        status: session.status,
+        exit_code: session.exitCode,
+      };
+    }
+
+    case "wait": {
+      const r = req as WaitRequest;
+      const session = sessions.get(r.session_id);
+      if (!session) {
+        return { type: "error", message: `Session not found: ${r.session_id}` };
+      }
+      const { screen, cursor, changed } = await session.wait(r.timeout_ms ?? 3000, r.until);
+      return {
+        type: "wait",
+        session_id: r.session_id,
+        screen,
+        cursor,
+        changed,
+        status: session.status,
+        exit_code: session.exitCode,
+      };
+    }
+
     case "send": {
       const r = req as SendRequest;
       const session = sessions.get(r.session_id);
@@ -82,22 +119,6 @@ async function handleRequest(req: Request): Promise<Response> {
           message: e instanceof Error ? e.message : String(e),
         };
       }
-    }
-
-    case "read": {
-      const r = req as ReadRequest;
-      const session = sessions.get(r.session_id);
-      if (!session) {
-        return { type: "error", message: `Session not found: ${r.session_id}` };
-      }
-      const output = await session.read(r.timeout_ms ?? 1500, r.wait_for);
-      return {
-        type: "read",
-        session_id: r.session_id,
-        output,
-        status: session.status,
-        exit_code: session.exitCode,
-      };
     }
 
     case "kill": {
@@ -155,6 +176,9 @@ function startServer() {
 
         handleRequest(req).then((res) => {
           socket.write(JSON.stringify(res) + "\n");
+        }).catch((err) => {
+          process.stderr.write(`[daemon] handleRequest error: ${err?.stack ?? err}\n`);
+          socket.write(JSON.stringify({ type: "error", message: String(err?.message ?? err) }) + "\n");
         });
       }
     });

@@ -14,9 +14,14 @@ import { Request, Response } from "./protocol";
 const DAEMON_START_TIMEOUT_MS = 3000;
 const DAEMON_POLL_INTERVAL_MS = 100;
 
+function info(msg: string): void {
+  process.stderr.write(`termlink: ${msg}\n`);
+}
+
 /** Send one request to daemon, return response. Auto-starts daemon if needed. */
 export async function sendRequest(req: Request): Promise<Response> {
   if (!isDaemonRunning()) {
+    info("starting daemon...");
     await startDaemon();
   }
   return sendToDaemon(req);
@@ -37,19 +42,36 @@ function isDaemonRunning(): boolean {
 async function startDaemon(): Promise<void> {
   const daemonScript = path.join(__dirname, "daemon.js");
 
+  if (!fs.existsSync(daemonScript)) {
+    throw new Error(`Daemon script not found: ${daemonScript}`);
+  }
+
   const child = child_process.spawn(process.execPath, [daemonScript], {
     detached: true,
-    stdio: "ignore",
+    stdio: ["ignore", "ignore", "inherit"],  // show daemon stderr (crash logs etc)
   });
+  child.on("error", (e) => info(`failed to spawn daemon: ${e.message}`));
   child.unref();
 
-  // Wait for socket to appear
   const deadline = Date.now() + DAEMON_START_TIMEOUT_MS;
+  let attempts = 0;
   while (Date.now() < deadline) {
-    if (fs.existsSync(SOCKET_PATH)) return;
     await sleep(DAEMON_POLL_INTERVAL_MS);
+    attempts++;
+    if (await canConnect()) {
+      info(`daemon ready (${attempts * DAEMON_POLL_INTERVAL_MS}ms)`);
+      return;
+    }
   }
-  throw new Error("Daemon failed to start within timeout");
+  throw new Error(`Daemon failed to start after ${DAEMON_START_TIMEOUT_MS}ms`);
+}
+
+function canConnect(): Promise<boolean> {
+  return new Promise((resolve) => {
+    const socket = net.createConnection(SOCKET_PATH);
+    socket.on("connect", () => { socket.destroy(); resolve(true); });
+    socket.on("error", () => resolve(false));
+  });
 }
 
 function sendToDaemon(req: Request): Promise<Response> {
@@ -81,7 +103,10 @@ function sendToDaemon(req: Request): Promise<Response> {
       }
     });
 
-    socket.on("error", reject);
+    socket.on("error", (e) => {
+      info(`socket error: ${e.message}`);
+      reject(e);
+    });
     socket.on("close", () => {
       if (!responded) {
         reject(new Error("Connection closed before response"));

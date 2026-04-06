@@ -2,20 +2,17 @@
 
 **Interactive CLI bridge for AI coding agents.**
 
-Drive any interactive terminal program programmatically — prompts, REPLs, TUI apps, interactive installers. Language agnostic.
+Drive any interactive terminal program programmatically — prompt-based CLIs, REPLs, TUI apps (htop, fzf, vim), interactive installers. Language agnostic.
+
+The interface mirrors browser automation: `wait` is your screenshot, `send` is your action.
 
 ```bash
-# Start an interactive program
-SID=$(termlink start "python myapp.py")
-
-# Wait for prompt, then send input
-termlink read $SID --wait-for "Enter your name"
+SID=$(termlink start python3 ask.py)
+termlink wait $SID                    # get first prompt
 termlink send $SID "Alice\n"
-
-# Read response
-termlink read $SID --timeout 2000
-
-# Clean up
+termlink wait $SID                    # get response + next prompt
+termlink send $SID "30\n"
+termlink wait $SID                    # get final output
 termlink kill $SID
 ```
 
@@ -32,39 +29,42 @@ npm link   # makes `termlink` available globally
 ## How It Works
 
 ```
-termlink start "gunicorn app:app"
+termlink start "python3 app.py"
       │
       └── Sends request to local daemon (auto-starts if needed)
               │
-              ├── Daemon spawns command in a PTY (via node-pty)
-              ├── Buffers all output in memory
+              ├── Daemon spawns command in a PTY (node-pty)
+              ├── PTY output fed into xterm headless VT renderer
               └── Returns session_id
 
-termlink read <id> --wait-for "pattern"
+termlink wait <id>
       │
-      └── Daemon returns buffered output (waits until pattern matches or timeout)
+      └── Waits for screen to change, renders to plain text, returns JSON
 
 termlink send <id> "input\n"
       │
-      └── Daemon writes to PTY stdin
+      └── Writes to PTY stdin
 ```
 
 The **daemon** runs in the background (`~/.termlink/daemon.sock`), owns all PTY sessions, and auto-exits after 5 minutes of inactivity.
+
+PTY output is rendered by **`@xterm/headless`** — a full VT100/xterm emulator. This means ANSI colors, cursor movement, and screen clearing all work correctly. The `screen` field in responses is always clean plain text.
 
 ## Commands
 
 | Command | Description |
 |---------|-------------|
 | `termlink start <cmd>` | Start program in PTY, returns `session_id` |
-| `termlink send <id> <input>` | Send input (`\n` = Enter, `\t` = Tab) |
-| `termlink read <id>` | Read buffered output as JSON |
+| `termlink wait <id>` | Wait for screen to change, return snapshot |
+| `termlink snapshot <id>` | Return current screen immediately |
+| `termlink send <id> <input>` | Send input or special key |
 | `termlink list` | List active sessions |
 | `termlink kill <id>` | Terminate session |
 
-### `termlink read` options
+### `termlink wait` options
 
-- `--timeout <ms>` — max wait time (default: 1500ms)
-- `--wait-for <pattern>` — block until output matches regex
+- `--until <pattern>` — wait until screen contains regex pattern
+- `--timeout <ms>` — max wait time (default: 3000ms)
 
 ### `termlink start` options
 
@@ -73,19 +73,32 @@ The **daemon** runs in the background (`~/.termlink/daemon.sock`), owns all PTY 
 - `--cols <n>` — terminal width (default: 120)
 - `--rows <n>` — terminal height (default: 30)
 
+### Special keys for `termlink send`
+
+`ctrl+c`, `ctrl+d`, `ctrl+z`, `ctrl+a/b/e/f/k/l/u/w`
+`arrow_up`, `arrow_down`, `arrow_left`, `arrow_right`
+`page_up`, `page_down`, `home`, `end`
+`enter`, `tab`, `escape`, `backspace`, `delete`, `f1`–`f10`
+
 ## Output Format
 
-All commands output JSON. Errors go to stderr with non-zero exit code.
+`termlink wait` and `termlink snapshot` return JSON:
 
-`termlink read` output:
 ```json
 {
   "session_id": "abc12345",
-  "output": "Welcome!\nEnter your name: ",
+  "screen": "What is your name?\n> ",
+  "cursor": { "x": 2, "y": 1 },
+  "changed": true,
   "status": "running",
   "exit_code": null
 }
 ```
+
+- `screen` — rendered plain text, trailing spaces and empty lines removed
+- `cursor` — current cursor position in the terminal grid
+- `changed` — whether screen changed since last `wait`/`snapshot`
+- `status` — `"running"` or `"exited"`
 
 ## For AI Agents
 
@@ -95,7 +108,12 @@ Copy `skills/termlink.md` to your Claude Code skills directory:
 cp skills/termlink.md ~/.claude/skills/
 ```
 
-Claude Code will then know how to use `termlink` to operate interactive programs.
+Claude Code will then know how to use termlink to operate interactive programs.
+
+## Limitations
+
+- **TUI color/style info is lost** — `screen` contains plain text only; colors and formatting are stripped. The content is readable but not visually identical to the terminal.
+- **Windows not supported** — requires Unix PTY (macOS/Linux). Windows support via ConPTY is planned.
 
 ## Architecture
 
@@ -108,14 +126,14 @@ src/
   cli.ts        # Entry point, Commander-based CLI
   daemon.ts     # Background process, PTY session manager
   client.ts     # Auto-starts daemon, sends IPC requests
-  session.ts    # node-pty wrapper + output buffer
+  session.ts    # node-pty + @xterm/headless VT renderer
   protocol.ts   # IPC message types
 ```
 
 ## Requirements
 
 - Node.js 18+
-- macOS / Linux (Windows support planned via ConPTY)
+- macOS / Linux
 
 ## License
 
