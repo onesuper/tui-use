@@ -46,8 +46,26 @@ function resetIdleTimer() {
   idleTimer.unref(); // don't prevent process exit if nothing else is running
 }
 
+const ADJECTIVES = [
+  "brave", "calm", "eager", "fancy", "gentle", "happy", "jolly", "kind",
+  "lively", "merry", "nice", "proud", "quiet", "rapid", "silly", "tidy",
+  "witty", "zesty", "bold", "crisp", "dusty", "early", "faint", "grand",
+  "heavy", "icy", "jazzy", "keen", "lazy", "misty", "noble", "odd",
+  "pale", "quirky", "rosy", "salty", "tangy", "urban", "vivid", "warm",
+];
+
+const NOUNS = [
+  "panda", "koala", "otter", "crane", "finch", "gecko", "heron", "ibis",
+  "jaguar", "kiwi", "lemur", "mink", "newt", "okapi", "puffin", "quail",
+  "raven", "stoat", "tapir", "urial", "viper", "wombat", "xerus", "yak",
+  "zebra", "bison", "capybara", "dingo", "elk", "ferret", "gibbon", "hawk",
+  "impala", "jackal", "kudu", "lynx", "marmot", "narwhal", "ocelot", "python",
+];
+
 function generateId(): string {
-  return Math.random().toString(36).slice(2, 10);
+  const adj = ADJECTIVES[Math.floor(Math.random() * ADJECTIVES.length)];
+  const noun = NOUNS[Math.floor(Math.random() * NOUNS.length)];
+  return `${adj}-${noun}`;
 }
 
 // ---- Request handlers ----
