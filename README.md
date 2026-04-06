@@ -58,6 +58,7 @@ PTY output is rendered by **`@xterm/headless`** — a full VT100/xterm emulator.
 | `termlink wait <id>` | Wait for screen to change, return snapshot |
 | `termlink snapshot <id>` | Return current screen immediately |
 | `termlink send <id> <input>` | Send input or special key |
+| `termlink keys` | List all supported special key names |
 | `termlink list` | List active sessions |
 | `termlink kill <id>` | Terminate session |
 
@@ -79,6 +80,8 @@ PTY output is rendered by **`@xterm/headless`** — a full VT100/xterm emulator.
 `arrow_up`, `arrow_down`, `arrow_left`, `arrow_right`
 `page_up`, `page_down`, `home`, `end`
 `enter`, `tab`, `escape`, `backspace`, `delete`, `f1`–`f10`
+
+Run `termlink keys` for the full up-to-date list.
 
 ## Output Format
 
