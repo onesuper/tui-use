@@ -1,17 +1,17 @@
 <div align="center">
 
-# termlink
+# tui-use
 
-**Give your AI agent hands in the terminal.**
+**Like BrowserUse, but for the terminal.**
 
-Interactive CLI bridge for AI coding agents — drive any program that requires keyboard input.
+TUI automation for AI agents — drive any program that requires keyboard input.
 
 [![License](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 [![Node](https://img.shields.io/badge/node-18+-green.svg)](https://nodejs.org/)
 
 </div>
 
-## What is termlink?
+## What is tui-use?
 
 AI coding assistants can read and write files, run shell commands, and parse output. But they hit a wall the moment a program asks for input:
 
@@ -26,7 +26,7 @@ But they cannot:
 - ❌ Navigate TUI apps (htop, fzf, vim, lazygit)
 - ❌ Step through interactive installers
 
-**termlink solves this by giving AI agents hands in the terminal.**
+**tui-use solves this by giving AI agents hands in the terminal.**
 
 Spawn any program in a PTY, observe its screen as rendered plain text, and send keystrokes — all from the command line. Language agnostic. Works with any interactive program.
 
@@ -44,24 +44,24 @@ Perfect for enhancing **Claude Code**, **Cursor**, **Continue**, and other AI co
 
 ```bash
 # Install
-git clone https://github.com/your-repo/termlink.git
-cd termlink && npm install && npm run build && npm link
+git clone https://github.com/your-repo/tui-use.git
+cd tui-use && npm install && npm run build && npm link
 
 # Start a program
-SID=$(termlink start python3 examples/ask.py)
+SID=$(tui-use start python3 examples/ask.py)
 
 # Drive it
-termlink wait $SID                    # get first prompt
-termlink type $SID "Alice\n"
-termlink wait $SID                    # get next prompt
-termlink type $SID "30\n"
-termlink wait $SID                    # get final output
-termlink kill $SID
+tui-use wait $SID                    # get first prompt
+tui-use type $SID "Alice\n"
+tui-use wait $SID                    # get next prompt
+tui-use type $SID "30\n"
+tui-use wait $SID                    # get final output
+tui-use kill $SID
 ```
 
 ### Example Output
 
-`termlink wait $SID` returns:
+`tui-use wait $SID` returns:
 
 ```json
 {
@@ -79,11 +79,11 @@ Your AI agent now sees exactly what the terminal shows — and knows the program
 ## Installation
 
 ```bash
-git clone https://github.com/your-repo/termlink.git
-cd termlink
+git clone https://github.com/your-repo/tui-use.git
+cd tui-use
 npm install
 npm run build
-npm link   # makes `termlink` available globally
+npm link   # makes `tui-use` available globally
 ```
 
 ## Usage
@@ -91,98 +91,98 @@ npm link   # makes `termlink` available globally
 ### Basic: drive a prompt-based CLI
 
 ```bash
-SID=$(termlink start python3 examples/ask.py)
+SID=$(tui-use start python3 examples/ask.py)
 
-termlink wait $SID
-termlink type $SID "Alice\n"
-termlink wait $SID
-termlink type $SID "30\n"
-termlink wait $SID
-termlink kill $SID
+tui-use wait $SID
+tui-use type $SID "Alice\n"
+tui-use wait $SID
+tui-use type $SID "30\n"
+tui-use wait $SID
+tui-use kill $SID
 ```
 
 ### REPL: interact with Python
 
 ```bash
-SID=$(termlink start python3)
+SID=$(tui-use start python3)
 
-termlink wait $SID --until ">>>"
-termlink type $SID "x = 42\n"
-termlink wait $SID --until ">>>"
-termlink type $SID "print(x * 2)\n"
-termlink wait $SID --until ">>>"
+tui-use wait $SID --until ">>>"
+tui-use type $SID "x = 42\n"
+tui-use wait $SID --until ">>>"
+tui-use type $SID "print(x * 2)\n"
+tui-use wait $SID --until ">>>"
 # screen contains "84"
 
-termlink type $SID "exit()\n"
-termlink kill $SID
+tui-use type $SID "exit()\n"
+tui-use kill $SID
 ```
 
 ### TUI: navigate htop
 
 ```bash
-SID=$(termlink start htop --rows 40 --cols 200)
+SID=$(tui-use start htop --rows 40 --cols 200)
 
-termlink wait $SID --until "PID"     # wait for htop to fully load
-termlink screen $SID                 # inspect current screen
+tui-use wait $SID --until "PID"     # wait for htop to fully load
+tui-use screen $SID                 # inspect current screen
 
-termlink type $SID "arrow_down"      # navigate
-termlink wait $SID
+tui-use type $SID "arrow_down"      # navigate
+tui-use wait $SID
 
-termlink type $SID "q"               # quit
-termlink kill $SID
+tui-use type $SID "q"               # quit
+tui-use kill $SID
 ```
 
 ### Interactive installer
 
 ```bash
-SID=$(termlink start bash install.sh)
+SID=$(tui-use start bash install.sh)
 
-termlink wait $SID --until "Install\?"
-termlink type $SID "y\n"
+tui-use wait $SID --until "Install\?"
+tui-use type $SID "y\n"
 
-termlink wait $SID --until "install path"
-termlink type $SID "/usr/local\n"
+tui-use wait $SID --until "install path"
+tui-use type $SID "/usr/local\n"
 
-termlink wait $SID --timeout 10000   # installation may take a while
-termlink kill $SID
+tui-use wait $SID --timeout 10000   # installation may take a while
+tui-use kill $SID
 ```
 
 ## Commands
 
 | Command | Description |
 |---------|-------------|
-| `termlink start <cmd>` | Start program in PTY, returns `session_id` |
-| `termlink wait <id>` | Wait for screen to change, return snapshot |
-| `termlink screen <id>` | Return current screen immediately |
-| `termlink type <id> <input>` | Send text or a special key |
-| `termlink keys` | List all supported special key names |
-| `termlink list` | List active sessions |
-| `termlink kill <id>` | Terminate session |
+| `tui-use start <cmd>` | Start program in PTY, returns `session_id` |
+| `tui-use wait <id>` | Wait for screen to change, return snapshot |
+| `tui-use screen <id>` | Return current screen immediately |
+| `tui-use type <id> <input>` | Send text or a special key |
+| `tui-use keys` | List all supported special key names |
+| `tui-use list` | List active sessions |
+| `tui-use kill <id>` | Terminate session |
 
-### `termlink wait` options
+### `tui-use wait` options
 
 - `--until <pattern>` — wait until screen contains regex pattern
 - `--timeout <ms>` — max wait time (default: 3000ms)
 
-### `termlink start` options
+### `tui-use start` options
 
 - `--cwd <dir>` — working directory
 - `--label <name>` — human-readable label
 - `--cols <n>` — terminal width (default: 120)
 - `--rows <n>` — terminal height (default: 30)
 
-### Special keys for `termlink type`
+### Special keys for `tui-use type`
 
 `ctrl+c`, `ctrl+d`, `ctrl+z`, `ctrl+a/b/e/f/k/l/u/w`
 `arrow_up`, `arrow_down`, `arrow_left`, `arrow_right`
 `page_up`, `page_down`, `home`, `end`
 `enter`, `tab`, `escape`, `backspace`, `delete`, `f1`–`f10`
 
-Run `termlink keys` for the full up-to-date list.
+Run `tui-use keys` for the full up-to-date list.
 
 ## Output Format
 
-`termlink wait` and `termlink screen` return JSON:
+`tui-use wait` and `tui-use screen` return JSON:
 
 ```json
 {
@@ -203,18 +203,18 @@ Run `termlink keys` for the full up-to-date list.
 
 ## For AI Agents
 
-Copy `skills/termlink.md` to your Claude Code skills directory:
+Copy `skills/tui-use.md` to your Claude Code skills directory:
 
 ```bash
-cp skills/termlink.md ~/.claude/skills/
+cp skills/tui-use.md ~/.claude/skills/
 ```
 
-Claude Code will then know how to use termlink to operate interactive programs.
+Claude Code will then know how to use tui-use to operate interactive programs.
 
 ## How It Works
 
 ```
-termlink start "python3 app.py"
+tui-use start "python3 app.py"
       │
       └── Sends request to local daemon (auto-starts if needed)
               │
@@ -222,23 +222,23 @@ termlink start "python3 app.py"
               ├── PTY output fed into @xterm/headless VT renderer
               └── Returns session_id
 
-termlink wait <id>
+tui-use wait <id>
       │
       └── Waits for screen to settle, renders buffer to plain text, returns JSON
 
-termlink type <id> "input\n"
+tui-use type <id> "input\n"
       │
       └── Translates text/key name → bytes, writes to PTY stdin
 ```
 
-The **daemon** runs in the background (`~/.termlink/daemon.sock`), owns all PTY sessions, and auto-exits after 5 minutes of inactivity.
+The **daemon** runs in the background (`~/.tui-use/daemon.sock`), owns all PTY sessions, and auto-exits after 5 minutes of inactivity.
 
 PTY output is rendered by **`@xterm/headless`** — a full VT100/xterm emulator. This means ANSI colors, cursor movement, and screen clearing all work correctly. The `screen` field in responses is always clean plain text.
 
 ## Architecture
 
 ```
-~/.termlink/
+~/.tui-use/
   daemon.sock   # Unix socket
   daemon.pid    # PID file
 
@@ -263,18 +263,18 @@ src/
 ## Development
 
 ```bash
-git clone https://github.com/your-repo/termlink.git
-cd termlink
+git clone https://github.com/your-repo/tui-use.git
+cd tui-use
 npm install
 npm run build
 npm link
 
 # Try it
-SID=$(termlink start python3 examples/ask.py)
-termlink wait $SID
-termlink type $SID "Alice\n"
-termlink wait $SID
-termlink kill $SID
+SID=$(tui-use start python3 examples/ask.py)
+tui-use wait $SID
+tui-use type $SID "Alice\n"
+tui-use wait $SID
+tui-use kill $SID
 ```
 
 ## License

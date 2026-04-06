@@ -1,15 +1,15 @@
 #!/usr/bin/env node
 /**
- * termlink/src/cli.ts
+ * tui-use/src/cli.ts
  *
- * Entry point for the `termlink` CLI command.
+ * Entry point for the `tui-use` CLI command.
  *
- *   termlink start <cmd>           → session_id
- *   termlink screen <id>           → JSON screen snapshot
- *   termlink wait <id>             → JSON screen snapshot (after change)
- *   termlink send <id> <input>     → ok
- *   termlink kill <id>             → ok
- *   termlink list                  → JSON session list
+ *   tui-use start <cmd>           → session_id
+ *   tui-use screen <id>           → JSON screen snapshot
+ *   tui-use wait <id>             → JSON screen snapshot (after change)
+ *   tui-use send <id> <input>     → ok
+ *   tui-use kill <id>             → ok
+ *   tui-use list                  → JSON session list
  */
 import { Command } from "commander";
 import { sendRequest } from "./client";
@@ -19,8 +19,8 @@ import { KEY_MAP } from "./session";
 const program = new Command();
 
 program
-  .name("termlink")
-  .description("Interactive CLI bridge for AI coding agents")
+  .name("tui-use")
+  .description("TUI automation for AI agents — like BrowserUse, but for the terminal")
   .version("0.1.0");
 
 // ---- start ----
@@ -47,7 +47,7 @@ program
     });
     handleResponse(res, (r) => {
       if (r.type === "start") {
-        // Print just the session_id for easy shell capture: SID=$(termlink start ...)
+        // Print just the session_id for easy shell capture: SID=$(tui-use start ...)
         console.log(r.session_id);
       }
     });
@@ -86,7 +86,7 @@ program
     "  Text: use \\n for Enter, \\t for Tab\n" +
     "  Keys: ctrl+c, ctrl+d, arrow_up, arrow_down, arrow_left, arrow_right,\n" +
     "        enter, escape, tab, backspace, page_up, page_down, f1-f10\n" +
-    "  Run `termlink keys` for the full key list"
+    "  Run `tui-use keys` for the full key list"
   )
   .action(async (session_id: string, input: string) => {
     const res = await sendRequest({ type: "send", session_id, input });

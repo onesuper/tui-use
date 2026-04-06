@@ -1,5 +1,5 @@
 /**
- * termlink/src/daemon.ts
+ * tui-use/src/daemon.ts
  *
  * Background daemon process. Manages PTY sessions, listens on Unix socket.
  * Auto-exits when all sessions have been dead for IDLE_TIMEOUT_MS.
@@ -22,7 +22,7 @@ import {
   KillRequest,
 } from "./protocol";
 
-const TERMLINK_DIR = path.join(os.homedir(), ".termlink");
+const TERMLINK_DIR = path.join(os.homedir(), ".tui-use");
 export const SOCKET_PATH = path.join(TERMLINK_DIR, "daemon.sock");
 export const PID_PATH = path.join(TERMLINK_DIR, "daemon.pid");
 
@@ -209,7 +209,7 @@ function startServer() {
   server.listen(SOCKET_PATH, () => {
     // Write PID file
     fs.writeFileSync(PID_PATH, String(process.pid));
-    process.stderr.write(`termlink daemon started (pid=${process.pid})\n`);
+    process.stderr.write(`tui-use daemon started (pid=${process.pid})\n`);
   });
 
   server.on("error", (err) => {

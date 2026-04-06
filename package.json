@@ -1,9 +1,9 @@
 {
-  "name": "termlink",
+  "name": "tui-use",
   "version": "0.1.0",
-  "description": "Interactive CLI bridge for AI coding agents — drive any interactive terminal program programmatically",
+  "description": "TUI automation for AI agents — like BrowserUse, but for the terminal",
   "bin": {
-    "termlink": "./dist/cli.js"
+    "tui-use": "./dist/cli.js"
   },
   "scripts": {
     "build": "tsc",

@@ -1,5 +1,5 @@
 /**
- * termlink/src/client.ts
+ * tui-use/src/client.ts
  *
  * CLI → daemon IPC client.
  * Auto-starts the daemon if it's not running.
@@ -15,7 +15,7 @@ const DAEMON_START_TIMEOUT_MS = 3000;
 const DAEMON_POLL_INTERVAL_MS = 100;
 
 function info(msg: string): void {
-  process.stderr.write(`termlink: ${msg}\n`);
+  process.stderr.write(`tui-use: ${msg}\n`);
 }
 
 /** Send one request to daemon, return response. Auto-starts daemon if needed. */

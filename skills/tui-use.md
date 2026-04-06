@@ -1,6 +1,6 @@
-# termlink — Interactive CLI Bridge for AI Agents
+# tui-use — TUI Automation for AI Agents
 
-Use `termlink` to operate interactive terminal programs that require keyboard input.
+Use `tui-use` to operate interactive terminal programs that require keyboard input.
 Works with prompt-based CLIs, REPLs, interactive installers, and TUI apps (htop, vim, fzf, etc.).
 
 ## Core Workflow
@@ -15,9 +15,9 @@ Think of it like browser automation: `wait` is your screenshot, `send` is your c
 
 ### Start a session
 ```bash
-SID=$(termlink start python3 myapp.py)
-SID=$(termlink start -- python3 -c 'name=input("Name: "); print("Hi", name)')
-SID=$(termlink start htop)
+SID=$(tui-use start python3 myapp.py)
+SID=$(tui-use start -- python3 -c 'name=input("Name: "); print("Hi", name)')
+SID=$(tui-use start htop)
 ```
 
 Options: `--cwd <dir>`, `--label <name>`, `--cols <n>`, `--rows <n>`
@@ -26,7 +26,7 @@ Options: `--cwd <dir>`, `--label <name>`, `--cols <n>`, `--rows <n>`
 
 ### Wait for screen to change
 ```bash
-termlink wait $SID
+tui-use wait $SID
 ```
 
 Returns JSON with current screen content after the screen settles:
@@ -51,7 +51,7 @@ Options:
 
 ### Take an immediate screen capture
 ```bash
-termlink screen $SID
+tui-use screen $SID
 ```
 
 Returns the current screen without waiting. Same JSON format as `wait`.
@@ -61,10 +61,10 @@ Use when you want to check the current state without blocking.
 
 ### Type input or send a key
 ```bash
-termlink type $SID "hello\n"        # text + Enter
-termlink type $SID "ctrl+c"         # interrupt
-termlink type $SID "arrow_down"     # navigate
-termlink type $SID "q"              # single key
+tui-use type $SID "hello\n"        # text + Enter
+tui-use type $SID "ctrl+c"         # interrupt
+tui-use type $SID "arrow_down"     # navigate
+tui-use type $SID "q"              # single key
 ```
 
 **Supported special keys:**
@@ -74,7 +74,7 @@ termlink type $SID "q"              # single key
 `enter`, `tab`, `escape`, `backspace`, `delete`
 `f1`–`f10`
 
-To get the full up-to-date list: `termlink keys`
+To get the full up-to-date list: `tui-use keys`
 
 **Text escapes:** `\n` = Enter, `\r` = carriage return, `\t` = Tab
 
@@ -82,12 +82,12 @@ To get the full up-to-date list: `termlink keys`
 
 ### List sessions
 ```bash
-termlink list
+tui-use list
 ```
 
 ### Kill a session
 ```bash
-termlink kill $SID
+tui-use kill $SID
 ```
 
 ---
@@ -96,7 +96,7 @@ termlink kill $SID
 
 1. **wait before send** — always call `wait` first to confirm the program is ready
 2. **check `status`** — if `"exited"`, don't send more input
-3. **use `--until`** for slow-starting programs — `termlink wait $SID --until "pattern"`
+3. **use `--until`** for slow-starting programs — `tui-use wait $SID --until "pattern"`
 4. **kill when done** — always clean up sessions
 
 ---
@@ -104,14 +104,14 @@ termlink kill $SID
 ## Example: Prompt-based CLI
 
 ```bash
-SID=$(termlink start python3 examples/ask.py)
+SID=$(tui-use start python3 examples/ask.py)
 
-termlink wait $SID                    # wait for first prompt
-termlink type $SID "Alice\n"
-termlink wait $SID                    # wait for next prompt
-termlink type $SID "30\n"
-termlink wait $SID                    # get final output
-termlink kill $SID
+tui-use wait $SID                    # wait for first prompt
+tui-use type $SID "Alice\n"
+tui-use wait $SID                    # wait for next prompt
+tui-use type $SID "30\n"
+tui-use wait $SID                    # get final output
+tui-use kill $SID
 ```
 
 ---
@@ -119,18 +119,18 @@ termlink kill $SID
 ## Example: Python REPL
 
 ```bash
-SID=$(termlink start python3)
+SID=$(tui-use start python3)
 
-termlink wait $SID --until ">>>"
-termlink type $SID "x = 42\n"
-termlink wait $SID --until ">>>"
-termlink type $SID "print(x * 2)\n"
-termlink wait $SID --until ">>>"
+tui-use wait $SID --until ">>>"
+tui-use type $SID "x = 42\n"
+tui-use wait $SID --until ">>>"
+tui-use type $SID "print(x * 2)\n"
+tui-use wait $SID --until ">>>"
 # screen will contain "84"
 
-termlink type $SID "exit()\n"
-termlink wait $SID
-termlink kill $SID
+tui-use type $SID "exit()\n"
+tui-use wait $SID
+tui-use kill $SID
 ```
 
 ---
@@ -138,17 +138,17 @@ termlink kill $SID
 ## Example: TUI app (htop)
 
 ```bash
-SID=$(termlink start htop --rows 40 --cols 200)
+SID=$(tui-use start htop --rows 40 --cols 200)
 
-termlink wait $SID --until "PID"     # wait for htop to fully load
-termlink screen $SID               # inspect current screen
+tui-use wait $SID --until "PID"     # wait for htop to fully load
+tui-use screen $SID               # inspect current screen
 
-termlink type $SID "arrow_down"      # navigate
-termlink wait $SID
+tui-use type $SID "arrow_down"      # navigate
+tui-use wait $SID
 
-termlink type $SID "q"               # quit
-termlink wait $SID
-termlink kill $SID
+tui-use type $SID "q"               # quit
+tui-use wait $SID
+tui-use kill $SID
 ```
 
 ---
@@ -156,14 +156,14 @@ termlink kill $SID
 ## Example: Interactive installer
 
 ```bash
-SID=$(termlink start bash install.sh)
+SID=$(tui-use start bash install.sh)
 
-termlink wait $SID --until "Install\?"
-termlink type $SID "y\n"
+tui-use wait $SID --until "Install\?"
+tui-use type $SID "y\n"
 
-termlink wait $SID --until "install path"
-termlink type $SID "/usr/local\n"
+tui-use wait $SID --until "install path"
+tui-use type $SID "/usr/local\n"
 
-termlink wait $SID --timeout 10000   # installation may take a while
-termlink kill $SID
+tui-use wait $SID --timeout 10000   # installation may take a while
+tui-use kill $SID
 ```
