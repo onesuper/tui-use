@@ -111,10 +111,11 @@ export class Session {
   }
 
   /**
-   * Return the current rendered screen as plain text.
-   * Trailing empty lines are removed. Updates lastSnapshot.
+   * Return the current rendered screen as raw lines + cursor.
+   * Trailing empty lines and per-line trailing spaces are removed.
+   * Updates lastSnapshot for change detection.
    */
-  snapshot(): { screen: string; cursor: { x: number; y: number }; changed: boolean } {
+  snapshot(): { lines: string[]; cursor: { x: number; y: number }; changed: boolean } {
     const buf = this.terminal.buffer.active;
     const lines: string[] = [];
     for (let i = 0; i < this.terminal.rows; i++) {
@@ -132,10 +133,8 @@ export class Session {
     const screen = lines.join("\n");
     const changed = screen !== this.lastSnapshot;
     this.lastSnapshot = screen;
-    // Prefix each line with its row number so agents can correlate cursor.y with screen content
-    const numberedScreen = lines.map((line, i) => `${i}: ${line}`).join("\n");
     return {
-      screen: numberedScreen,
+      lines,
       cursor: { x: buf.cursorX, y: buf.cursorY },
       changed,
     };
@@ -148,7 +147,7 @@ export class Session {
   async wait(
     timeoutMs: number = 3000,
     until?: string
-  ): Promise<{ screen: string; cursor: { x: number; y: number }; changed: boolean }> {
+  ): Promise<{ lines: string[]; cursor: { x: number; y: number }; changed: boolean }> {
     const beforeScreen = this.lastSnapshot;
 
     if (this._status === "exited") {

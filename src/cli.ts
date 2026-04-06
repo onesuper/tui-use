@@ -13,7 +13,7 @@
  */
 import { Command } from "commander";
 import { sendRequest } from "./client";
-import { Response, ErrorResponse, ScreenResponse } from "./protocol";
+import { Response, ErrorResponse, ScreenResponse, ScreenFormat } from "./protocol";
 import { KEY_MAP } from "./session";
 
 const program = new Command();
@@ -57,9 +57,10 @@ program
 program
   .command("screen <session_id>")
   .description("Return the current rendered screen content")
-  .action(async (session_id: string) => {
+  .option("--format <fmt>", "Output format: text, lines, numbered, pretty (default: text)", "text")
+  .action(async (session_id: string, opts) => {
     const res = await sendRequest({ type: "snapshot", session_id });
-    handleResponse(res, (r) => printScreen(r as ScreenResponse));
+    handleResponse(res, (r) => printScreen(r as ScreenResponse, opts.format as ScreenFormat));
   });
 
 // ---- wait ----
@@ -68,6 +69,7 @@ program
   .description("Wait for screen to change, then return snapshot")
   .option("--until <pattern>", "Wait until screen contains regex pattern")
   .option("--timeout <ms>", "Max wait time in ms (default: 3000)", "3000")
+  .option("--format <fmt>", "Output format: text, lines, numbered, pretty (default: text)", "text")
   .action(async (session_id: string, opts) => {
     const res = await sendRequest({
       type: "wait",
@@ -75,7 +77,7 @@ program
       timeout_ms: parseInt(opts.timeout, 10),
       until: opts.until,
     });
-    handleResponse(res, (r) => printScreen(r as ScreenResponse));
+    handleResponse(res, (r) => printScreen(r as ScreenResponse, opts.format as ScreenFormat));
   });
 
 // ---- type ----
@@ -133,12 +135,38 @@ program
 
 // ---- helpers ----
 
-function printScreen(r: ScreenResponse): void {
+function formatScreen(lines: string[], format: ScreenFormat): string | string[] {
+  switch (format) {
+    case "text":
+      return lines.join("\n");
+    case "lines":
+      return lines;
+    case "numbered":
+      return lines.map((line, i) => `${i}: ${line}`).join("\n");
+    case "pretty":
+      return lines.join("\n"); // rendered below outside JSON
+    default:
+      return lines.join("\n");
+  }
+}
+
+function printScreen(r: ScreenResponse, format: ScreenFormat = "text"): void {
+  if (format === "pretty") {
+    const width = 50;
+    const header = `─── ${r.session_id} ${"─".repeat(Math.max(0, width - r.session_id.length - 5))}`;
+    const footer = `─── ${r.status} | cursor (${r.cursor.x},${r.cursor.y}) ${"─".repeat(Math.max(0, width - r.status.length - 20))}`;
+    process.stdout.write(header + "\n");
+    for (const line of r.lines) process.stdout.write(line + "\n");
+    process.stdout.write(footer + "\n");
+    return;
+  }
+
+  const screen = formatScreen(r.lines, format);
   console.log(
     JSON.stringify(
       {
         session_id: r.session_id,
-        screen: r.screen,
+        screen,
         cursor: r.cursor,
         changed: r.changed,
         status: r.status,

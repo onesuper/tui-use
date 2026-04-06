@@ -24,6 +24,8 @@ export interface StartRequest {
   rows?: number;
 }
 
+export type ScreenFormat = "text" | "lines" | "numbered" | "pretty";
+
 export interface SnapshotRequest {
   type: "snapshot";
   session_id: string;
@@ -70,7 +72,7 @@ export interface StartResponse {
 export interface ScreenResponse {
   type: "snapshot" | "wait";
   session_id: string;
-  screen: string;                  // rendered screen content, trailing empty lines removed
+  lines: string[];                  // raw screen lines, trailing empty lines removed
   cursor: { x: number; y: number };
   changed: boolean;                // true if screen changed since last snapshot/wait
   status: "running" | "exited";
