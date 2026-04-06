@@ -78,14 +78,15 @@ program
     handleResponse(res, (r) => printScreen(r as ScreenResponse));
   });
 
-// ---- send ----
+// ---- type ----
 program
-  .command("send <session_id> <input>")
+  .command("type <session_id> <input>")
   .description(
-    "Send input to a session.\n" +
+    "Type text or send a key to a session.\n" +
     "  Text: use \\n for Enter, \\t for Tab\n" +
     "  Keys: ctrl+c, ctrl+d, arrow_up, arrow_down, arrow_left, arrow_right,\n" +
-    "        enter, escape, tab, backspace, page_up, page_down, f1-f10"
+    "        enter, escape, tab, backspace, page_up, page_down, f1-f10\n" +
+    "  Run `termlink keys` for the full key list"
   )
   .action(async (session_id: string, input: string) => {
     const res = await sendRequest({ type: "send", session_id, input });

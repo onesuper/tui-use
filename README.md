@@ -4,14 +4,14 @@
 
 Drive any interactive terminal program programmatically — prompt-based CLIs, REPLs, TUI apps (htop, fzf, vim), interactive installers. Language agnostic.
 
-The interface mirrors browser automation: `wait` is your screenshot, `send` is your action.
+The interface mirrors browser automation: `wait` is your screenshot, `type` is your action.
 
 ```bash
 SID=$(termlink start python3 ask.py)
 termlink wait $SID                    # get first prompt
-termlink send $SID "Alice\n"
+termlink type $SID "Alice\n"
 termlink wait $SID                    # get response + next prompt
-termlink send $SID "30\n"
+termlink type $SID "30\n"
 termlink wait $SID                    # get final output
 termlink kill $SID
 ```
@@ -41,7 +41,7 @@ termlink wait <id>
       │
       └── Waits for screen to change, renders to plain text, returns JSON
 
-termlink send <id> "input\n"
+termlink type <id> "input\n"
       │
       └── Writes to PTY stdin
 ```
@@ -57,7 +57,7 @@ PTY output is rendered by **`@xterm/headless`** — a full VT100/xterm emulator.
 | `termlink start <cmd>` | Start program in PTY, returns `session_id` |
 | `termlink wait <id>` | Wait for screen to change, return snapshot |
 | `termlink snapshot <id>` | Return current screen immediately |
-| `termlink send <id> <input>` | Send input or special key |
+| `termlink type <id> <input>` | Send input or special key |
 | `termlink keys` | List all supported special key names |
 | `termlink list` | List active sessions |
 | `termlink kill <id>` | Terminate session |
@@ -74,7 +74,7 @@ PTY output is rendered by **`@xterm/headless`** — a full VT100/xterm emulator.
 - `--cols <n>` — terminal width (default: 120)
 - `--rows <n>` — terminal height (default: 30)
 
-### Special keys for `termlink send`
+### Special keys for `termlink type`
 
 `ctrl+c`, `ctrl+d`, `ctrl+z`, `ctrl+a/b/e/f/k/l/u/w`
 `arrow_up`, `arrow_down`, `arrow_left`, `arrow_right`

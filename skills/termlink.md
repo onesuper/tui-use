@@ -59,12 +59,12 @@ Use when you want to check the current state without blocking.
 
 ---
 
-### Send input
+### Type input or send a key
 ```bash
-termlink send $SID "hello\n"        # text + Enter
-termlink send $SID "ctrl+c"         # interrupt
-termlink send $SID "arrow_down"     # navigate
-termlink send $SID "q"              # single key
+termlink type $SID "hello\n"        # text + Enter
+termlink type $SID "ctrl+c"         # interrupt
+termlink type $SID "arrow_down"     # navigate
+termlink type $SID "q"              # single key
 ```
 
 **Supported special keys:**
@@ -107,9 +107,9 @@ termlink kill $SID
 SID=$(termlink start python3 examples/ask.py)
 
 termlink wait $SID                    # wait for first prompt
-termlink send $SID "Alice\n"
+termlink type $SID "Alice\n"
 termlink wait $SID                    # wait for next prompt
-termlink send $SID "30\n"
+termlink type $SID "30\n"
 termlink wait $SID                    # get final output
 termlink kill $SID
 ```
@@ -122,13 +122,13 @@ termlink kill $SID
 SID=$(termlink start python3)
 
 termlink wait $SID --until ">>>"
-termlink send $SID "x = 42\n"
+termlink type $SID "x = 42\n"
 termlink wait $SID --until ">>>"
-termlink send $SID "print(x * 2)\n"
+termlink type $SID "print(x * 2)\n"
 termlink wait $SID --until ">>>"
 # screen will contain "84"
 
-termlink send $SID "exit()\n"
+termlink type $SID "exit()\n"
 termlink wait $SID
 termlink kill $SID
 ```
@@ -143,10 +143,10 @@ SID=$(termlink start htop --rows 40 --cols 200)
 termlink wait $SID --until "PID"     # wait for htop to fully load
 termlink snapshot $SID               # inspect current screen
 
-termlink send $SID "arrow_down"      # navigate
+termlink type $SID "arrow_down"      # navigate
 termlink wait $SID
 
-termlink send $SID "q"               # quit
+termlink type $SID "q"               # quit
 termlink wait $SID
 termlink kill $SID
 ```
@@ -159,10 +159,10 @@ termlink kill $SID
 SID=$(termlink start bash install.sh)
 
 termlink wait $SID --until "Install\?"
-termlink send $SID "y\n"
+termlink type $SID "y\n"
 
 termlink wait $SID --until "install path"
-termlink send $SID "/usr/local\n"
+termlink type $SID "/usr/local\n"
 
 termlink wait $SID --timeout 10000   # installation may take a while
 termlink kill $SID
