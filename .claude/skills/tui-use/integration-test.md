@@ -1,3 +1,8 @@
+---
+name: tui-use-integration-test
+description: Use when you need to verify tui-use end-to-end behavior — driving interactive CLI programs, Python REPL, --until pattern matching, --timeout, and special key handling.
+---
+
 # tui-use Integration Tests
 
 Run all integration tests below in order. For each step, execute the command and verify the assertion. Report PASS or FAIL for each test case, and a summary at the end.
