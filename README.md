@@ -86,6 +86,24 @@ npm run build
 npm link   # makes `tui-use` available globally
 ```
 
+## Agent Setup
+
+### Claude Code
+
+Copy the skill file to your Claude Code skills directory:
+
+```bash
+cp skills/tui-use.md ~/.claude/skills/
+```
+
+Claude Code will automatically know how to use `tui-use` to operate interactive programs.
+
+### Other agents
+
+- **Cursor** — coming soon
+- **Copilot CLI** — coming soon
+- **Gemini CLI** — coming soon
+
 ## Usage
 
 ### Basic: drive a prompt-based CLI
@@ -201,16 +219,6 @@ Run `tui-use keys` for the full up-to-date list.
 - `status` — `"running"` or `"exited"`
 - `exit_code` — process exit code, or `null` if still running
 
-## For AI Agents
-
-Copy `skills/tui-use.md` to your Claude Code skills directory:
-
-```bash
-cp skills/tui-use.md ~/.claude/skills/
-```
-
-Claude Code will then know how to use tui-use to operate interactive programs.
-
 ## How It Works
 
 ```
@@ -234,21 +242,6 @@ tui-use type <id> "input\n"
 The **daemon** runs in the background (`~/.tui-use/daemon.sock`), owns all PTY sessions, and auto-exits after 5 minutes of inactivity.
 
 PTY output is rendered by **`@xterm/headless`** — a full VT100/xterm emulator. This means ANSI colors, cursor movement, and screen clearing all work correctly. The `screen` field in responses is always clean plain text.
-
-## Architecture
-
-```
-~/.tui-use/
-  daemon.sock   # Unix socket
-  daemon.pid    # PID file
-
-src/
-  cli.ts        # Entry point, Commander-based CLI
-  daemon.ts     # Background process, PTY session manager
-  client.ts     # Auto-starts daemon, sends IPC requests
-  session.ts    # node-pty + @xterm/headless VT renderer
-  protocol.ts   # IPC message types
-```
 
 ## Limitations
 
