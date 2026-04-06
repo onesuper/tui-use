@@ -77,6 +77,12 @@ export interface ScreenResponse {
   changed: boolean;                // true if screen changed since last snapshot/wait
   status: "running" | "exited";
   exit_code: number | null;
+  highlights: Array<{              // inverse-video spans (selected items, highlights)
+    line: number;
+    col_start: number;
+    col_end: number;
+    text: string;
+  }>;
 }
 
 export interface SendResponse {

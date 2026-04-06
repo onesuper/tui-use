@@ -9,6 +9,7 @@
 import * as pty from "node-pty";
 import { Terminal } from "@xterm/headless";
 import { SessionInfo } from "./protocol";
+import { extractHighlights, Highlight } from "./highlights";
 
 // Special key name → escape sequence mapping
 export const KEY_MAP: Record<string, string> = {
@@ -115,11 +116,10 @@ export class Session {
    * Trailing empty lines and per-line trailing spaces are removed.
    * Updates lastSnapshot for change detection.
    */
-  snapshot(): { lines: string[]; cursor: { x: number; y: number }; changed: boolean } {
+  snapshot(): { lines: string[]; cursor: { x: number; y: number }; changed: boolean; highlights: Highlight[] } {
     const buf = this.terminal.buffer.active;
     const lines: string[] = [];
     for (let i = 0; i < this.terminal.rows; i++) {
-      // trimEnd removes trailing spaces from each line (xterm pads to full width)
       lines.push((buf.getLine(i)?.translateToString(true) ?? "").trimEnd());
     }
     // Remove trailing empty lines
@@ -133,10 +133,12 @@ export class Session {
     const screen = lines.join("\n");
     const changed = screen !== this.lastSnapshot;
     this.lastSnapshot = screen;
+    const highlights = extractHighlights(buf, this.terminal.rows);
     return {
       lines,
       cursor: { x: buf.cursorX, y: buf.cursorY },
       changed,
+      highlights,
     };
   }
 
@@ -147,7 +149,7 @@ export class Session {
   async wait(
     timeoutMs: number = 3000,
     until?: string
-  ): Promise<{ lines: string[]; cursor: { x: number; y: number }; changed: boolean }> {
+  ): Promise<{ lines: string[]; cursor: { x: number; y: number }; changed: boolean; highlights: ReturnType<typeof extractHighlights> }> {
     const beforeScreen = this.lastSnapshot;
 
     if (this._status === "exited") {

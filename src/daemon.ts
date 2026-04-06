@@ -92,13 +92,14 @@ async function handleRequest(req: Request): Promise<Response> {
       if (!session) {
         return { type: "error", message: `Session not found: ${r.session_id}` };
       }
-      const { lines, cursor, changed } = session.snapshot();
+      const { lines, cursor, changed, highlights } = session.snapshot();
       return {
         type: "snapshot",
         session_id: r.session_id,
         lines,
         cursor,
         changed,
+        highlights,
         status: session.status,
         exit_code: session.exitCode,
       };
@@ -110,13 +111,14 @@ async function handleRequest(req: Request): Promise<Response> {
       if (!session) {
         return { type: "error", message: `Session not found: ${r.session_id}` };
       }
-      const { lines, cursor, changed } = await session.wait(r.timeout_ms ?? 3000, r.until);
+      const { lines, cursor, changed, highlights } = await session.wait(r.timeout_ms ?? 3000, r.until);
       return {
         type: "wait",
         session_id: r.session_id,
         lines,
         cursor,
         changed,
+        highlights,
         status: session.status,
         exit_code: session.exitCode,
       };

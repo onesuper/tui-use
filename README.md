@@ -30,6 +30,7 @@ Perfect for **Claude Code**, **Cursor**, **Codex**, **Gemini CLI**, **OpenCode**
 
 - **🖥️ Full VT Rendering** — PTY output is processed by a headless xterm emulator. ANSI escape sequences, cursor movement, and screen clearing all work correctly. The `screen` field is always clean plain text.
 - **📸 Snapshot Model** — Interacting with a terminal program is just a loop: read what's on screen, decide what to type, repeat. tui-use makes that loop explicit — no async streams, no timing guesswork, no partial output to reassemble.
+- **🔍 Highlights** — Every snapshot includes a `highlights` field listing the inverse-video spans on screen — the standard way TUI programs indicate selected items. Agents can read which menu option, tab, or button is currently active without parsing text or guessing from cursor position.
 - **⌨️ Rich Key Support** — Send text, Enter, Ctrl+C, arrow keys, F-keys, and more. Run `tui-use keys` to see the full list.
 - **🔌 Daemon Architecture** — A background daemon owns all PTY sessions and auto-exits after 5 minutes of inactivity. No manual process management.
 
@@ -81,7 +82,7 @@ PTY output is rendered by **`@xterm/headless`** — a full VT100/xterm emulator.
 
 ## Limitations
 
-- **TUI color/style info is lost** — `screen` contains plain text only; colors and formatting are stripped. The content is readable but not visually identical to the terminal.
+- **TUI color/style info is mostly lost** — `screen` contains plain text only; colors and most formatting are stripped. Selected items and active elements are captured in the `highlights` field via inverse-video detection.
 - **Windows not supported** — requires Unix PTY (macOS/Linux). Windows support via ConPTY is planned.
 
 ## Development
