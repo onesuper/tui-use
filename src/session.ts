@@ -11,7 +11,7 @@ import { Terminal } from "@xterm/headless";
 import { SessionInfo } from "./protocol";
 
 // Special key name → escape sequence mapping
-const KEY_MAP: Record<string, string> = {
+export const KEY_MAP: Record<string, string> = {
   "ctrl+a": "\x01", "ctrl+b": "\x02", "ctrl+c": "\x03", "ctrl+d": "\x04",
   "ctrl+e": "\x05", "ctrl+f": "\x06", "ctrl+k": "\x0b", "ctrl+l": "\x0c",
   "ctrl+u": "\x15", "ctrl+w": "\x17", "ctrl+z": "\x1a",

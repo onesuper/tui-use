@@ -74,6 +74,8 @@ termlink send $SID "q"              # single key
 `enter`, `tab`, `escape`, `backspace`, `delete`
 `f1`–`f10`
 
+To get the full up-to-date list: `termlink keys`
+
 **Text escapes:** `\n` = Enter, `\r` = carriage return, `\t` = Tab
 
 ---

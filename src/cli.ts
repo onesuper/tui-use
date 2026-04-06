@@ -14,6 +14,7 @@
 import { Command } from "commander";
 import { sendRequest } from "./client";
 import { Response, ErrorResponse, ScreenResponse } from "./protocol";
+import { KEY_MAP } from "./session";
 
 const program = new Command();
 
@@ -106,6 +107,14 @@ program
         console.log(JSON.stringify({ ok: r.ok }));
       }
     });
+  });
+
+// ---- keys ----
+program
+  .command("keys")
+  .description("List all supported special key names for use with `send`")
+  .action(() => {
+    console.log(JSON.stringify(Object.keys(KEY_MAP), null, 2));
   });
 
 // ---- list ----
