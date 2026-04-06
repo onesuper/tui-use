@@ -36,7 +36,7 @@ Perfect for enhancing **Claude Code**, **Cursor**, **Continue**, and other AI co
 
 - **🖥️ Full VT Rendering** — PTY output is processed by a headless xterm emulator. ANSI escape sequences, cursor movement, and screen clearing all work correctly. The `screen` field is always clean plain text.
 - **📸 Snapshot Model** — Inspired by browser automation: `wait` is your screenshot, `type` is your action. No polling, no raw byte streams.
-- **⌨️ Rich Key Support** — Send text, Enter, Ctrl+C, arrow keys, F-keys, and more. Run `termlink keys` to see the full list.
+- **⌨️ Rich Key Support** — Send text, Enter, Ctrl+C, arrow keys, F-keys, and more. Run `tui-use keys` to see the full list.
 - **🔌 Daemon Architecture** — A background daemon owns all PTY sessions and auto-exits after 5 minutes of inactivity. No manual process management.
 - **🤖 AI-Friendly** — Structured JSON output. Includes a ready-to-use Claude Code skill file.
 
@@ -177,10 +177,11 @@ tui-use kill $SID
 | `tui-use list` | List active sessions |
 | `tui-use kill <id>` | Terminate session |
 
-### `tui-use wait` options
+### `tui-use wait` / `tui-use screen` options
 
-- `--until <pattern>` — wait until screen contains regex pattern
-- `--timeout <ms>` — max wait time (default: 3000ms)
+- `--format <fmt>` — output format: `text` (default), `lines`, `numbered`, `pretty`
+- `--until <pattern>` — (`wait` only) wait until screen contains regex pattern
+- `--timeout <ms>` — (`wait` only) max wait time (default: 3000ms)
 
 ### `tui-use start` options
 
@@ -200,7 +201,16 @@ Run `tui-use keys` for the full up-to-date list.
 
 ## Output Format
 
-`tui-use wait` and `tui-use screen` return JSON:
+`tui-use wait` and `tui-use screen` return JSON. Use `--format` to control how the screen content is presented:
+
+| Format | `screen` value | Best for |
+|--------|---------------|---------|
+| `text` (default) | Plain string with `\n` | AI agents, compact |
+| `lines` | JSON array of strings | Structured processing |
+| `numbered` | Each line prefixed with row index | Cursor spatial correlation |
+| `pretty` | Human-readable box, no JSON | Debugging |
+
+Default output (`--format text`):
 
 ```json
 {
@@ -212,6 +222,17 @@ Run `tui-use keys` for the full up-to-date list.
   "exit_code": null
 }
 ```
+
+With `--format numbered`:
+
+```json
+{
+  "screen": "0: What is your name?\n1: > ",
+  "cursor": { "x": 2, "y": 1 }
+}
+```
+
+Agent can immediately see that `cursor.y = 1` corresponds to line `"1: > "`.
 
 - `screen` — rendered plain text; trailing spaces and empty lines removed
 - `cursor` — current cursor position in the terminal grid
