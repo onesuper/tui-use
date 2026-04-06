@@ -49,9 +49,9 @@ Options:
 
 ---
 
-### Take an immediate snapshot
+### Take an immediate screen capture
 ```bash
-termlink snapshot $SID
+termlink screen $SID
 ```
 
 Returns the current screen without waiting. Same JSON format as `wait`.
@@ -141,7 +141,7 @@ termlink kill $SID
 SID=$(termlink start htop --rows 40 --cols 200)
 
 termlink wait $SID --until "PID"     # wait for htop to fully load
-termlink snapshot $SID               # inspect current screen
+termlink screen $SID               # inspect current screen
 
 termlink type $SID "arrow_down"      # navigate
 termlink wait $SID

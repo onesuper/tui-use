@@ -56,7 +56,7 @@ PTY output is rendered by **`@xterm/headless`** — a full VT100/xterm emulator.
 |---------|-------------|
 | `termlink start <cmd>` | Start program in PTY, returns `session_id` |
 | `termlink wait <id>` | Wait for screen to change, return snapshot |
-| `termlink snapshot <id>` | Return current screen immediately |
+| `termlink screen <id>` | Return current screen immediately |
 | `termlink type <id> <input>` | Send input or special key |
 | `termlink keys` | List all supported special key names |
 | `termlink list` | List active sessions |
@@ -85,7 +85,7 @@ Run `termlink keys` for the full up-to-date list.
 
 ## Output Format
 
-`termlink wait` and `termlink snapshot` return JSON:
+`termlink wait` and `termlink screen` return JSON:
 
 ```json
 {

@@ -5,7 +5,7 @@
  * Entry point for the `termlink` CLI command.
  *
  *   termlink start <cmd>           → session_id
- *   termlink snapshot <id>         → JSON screen snapshot
+ *   termlink screen <id>           → JSON screen snapshot
  *   termlink wait <id>             → JSON screen snapshot (after change)
  *   termlink send <id> <input>     → ok
  *   termlink kill <id>             → ok
@@ -53,9 +53,9 @@ program
     });
   });
 
-// ---- snapshot ----
+// ---- screen ----
 program
-  .command("snapshot <session_id>")
+  .command("screen <session_id>")
   .description("Return the current rendered screen content")
   .action(async (session_id: string) => {
     const res = await sendRequest({ type: "snapshot", session_id });
