@@ -1,0 +1,20 @@
+# Source files (not needed in published package)
+src/
+tsconfig.json
+
+# Development files
+.vscode/
+examples/
+.git/
+.gitignore
+
+# Test files
+**/*.test.ts
+**/*.spec.ts
+
+# Build artifacts (only dist/ is needed)
+node_modules/
+
+# Misc
+image.png
+rebuild.js

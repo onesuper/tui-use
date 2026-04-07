@@ -3,10 +3,19 @@
   "version": "0.1.0",
   "description": "TUI automation for AI agents — like BrowserUse, but for the terminal",
   "bin": "./dist/cli.js",
+  "files": [
+    "dist/",
+    "README.md",
+    "LICENSE"
+  ],
   "scripts": {
     "build": "tsc && chmod +x dist/cli.js",
     "clean": "rm -rf node_modules package-lock.json dist ~/.tui-use",
     "dev": "tsc --watch",
+    "prepublishOnly": "npm run build",
+    "publish:patch": "npm version patch && npm publish",
+    "publish:minor": "npm version minor && npm publish",
+    "publish:major": "npm version major && npm publish",
     "start": "node dist/cli.js",
     "test": "vitest run --exclude 'dist/**'",
     "postinstall": "npm run rebuild-native",
