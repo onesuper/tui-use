@@ -80,6 +80,8 @@ export interface ScreenResponse {
   changed: boolean;                // true if screen changed since last snapshot/wait
   status: "running" | "exited";
   exit_code: number | null;
+  title: string;                   // OSC 0/2 window title set by the process
+  is_fullscreen: boolean;          // true when app is using the alternate buffer
   highlights: Array<{              // inverse-video spans (selected items, highlights)
     line: number;
     col_start: number;

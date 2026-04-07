@@ -110,7 +110,7 @@ async function handleRequest(req: Request): Promise<Response> {
       if (!session) {
         return { type: "error", message: `Session not found: ${currentSession}` };
       }
-      const { lines, cursor, changed, highlights } = session.snapshot();
+      const { lines, cursor, changed, highlights, title, is_fullscreen } = session.snapshot();
       return {
         type: "snapshot",
         session_id: currentSession,
@@ -118,6 +118,8 @@ async function handleRequest(req: Request): Promise<Response> {
         cursor,
         changed,
         highlights,
+        title,
+        is_fullscreen,
         status: session.status,
         exit_code: session.exitCode,
       };
@@ -131,7 +133,7 @@ async function handleRequest(req: Request): Promise<Response> {
       if (!session) {
         return { type: "error", message: `Session not found: ${currentSession}` };
       }
-      const { lines, cursor, changed, highlights } = await session.wait((req as WaitRequest).timeout_ms ?? 3000, (req as WaitRequest).text);
+      const { lines, cursor, changed, highlights, title, is_fullscreen } = await session.wait((req as WaitRequest).timeout_ms ?? 3000, (req as WaitRequest).text);
       return {
         type: "wait",
         session_id: currentSession,
@@ -139,6 +141,8 @@ async function handleRequest(req: Request): Promise<Response> {
         cursor,
         changed,
         highlights,
+        title,
+        is_fullscreen,
         status: session.status,
         exit_code: session.exitCode,
       };

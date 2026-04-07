@@ -259,6 +259,8 @@ function printScreen(r: ScreenResponse, format: ScreenFormat = "text"): void {
         changed: r.changed,
         status: r.status,
         exit_code: r.exit_code,
+        title: r.title,
+        is_fullscreen: r.is_fullscreen,
         highlights: r.highlights,
       },
       null,

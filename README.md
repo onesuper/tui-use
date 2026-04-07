@@ -31,6 +31,8 @@ Perfect for **Claude Code**, **Cursor**, **Codex**, **Gemini CLI**, **OpenCode**
 - **🖥️ Full VT Rendering** — PTY output is processed by a headless xterm emulator. ANSI escape sequences, cursor movement, and screen clearing all work correctly. The `screen` field is always clean plain text.
 - **📸 Snapshot Model** — Interacting with a terminal program is just a loop: read what's on screen, decide what to type, repeat. tui-use makes that loop explicit — no async streams, no timing guesswork, no partial output to reassemble.
 - **🔍 Highlights** — Every snapshot includes a `highlights` field listing the inverse-video spans on screen — the standard way TUI programs indicate selected items. Agents can read which menu option, tab, or button is currently active without parsing text or guessing from cursor position.
+- **🏷️ Title Tracking** — Every snapshot includes a `title` field with the current window title set by the process via OSC sequences. Vim shows the filename, htop shows the process name — no screen parsing needed.
+- **🖥️ Fullscreen Detection** — Every snapshot includes an `is_fullscreen` field that is `true` when the process is using the alternate buffer (vim, htop, lazygit, etc.), giving agents immediate context on the terminal mode.
 - **⌨️ Rich Key Support** — Send text, Enter, Ctrl+C, arrow keys, F-keys, and more. Run `tui-use keys` to see the full list.
 - **🔌 Daemon Architecture** — A background daemon owns all PTY sessions and auto-exits after 5 minutes of inactivity. No manual process management.
 
@@ -162,7 +164,7 @@ tui-use keys             # List all supported key names
 
 ## Limitations
 
-- **TUI color/style info is mostly lost** — `screen` contains plain text only; colors and most formatting are stripped. Selected items and active elements are captured in the `highlights` field via inverse-video detection.
+- **TUI color/style info is mostly lost** — `screen` contains plain text only; colors and most formatting are stripped. Selected items and active elements are captured in `highlights` via inverse-video detection. Window title and fullscreen mode are captured in `title` and `is_fullscreen`.
 - **Windows not supported** — requires Unix PTY (macOS/Linux). Windows support via ConPTY is planned.
 
 ## Development
@@ -193,7 +195,7 @@ Run the following command in Claude Code:
 /tui-use-integration-test
 ```
 
-Claude will execute all five test cases in order and report `PASS / FAIL` for each, with actual screen output on any failure.
+Claude will execute all eight test cases in order and report `PASS / FAIL` for each, with actual screen output on any failure.
 
 ## License
 

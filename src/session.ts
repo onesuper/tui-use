@@ -11,6 +11,30 @@ import { Terminal } from "@xterm/headless";
 import { SessionInfo } from "./protocol";
 import { extractHighlights, Highlight } from "./highlights";
 
+// ---- Pure helper functions (exported for testing) ----
+
+/** Extract title from a raw title string (or undefined). */
+export function extractTitle(raw: string | undefined): string {
+  return raw ?? "";
+}
+
+/** Extract fullscreen status from the xterm IBufferNamespace. */
+export function extractIsFullscreen(bufferNamespace: { active: { type: string } }): boolean {
+  return bufferNamespace.active.type === "alternate";
+}
+
+/** Check if any observable state has changed between two snapshots. */
+export function hasChanged(
+  before: { screen: string; title: string; is_fullscreen: boolean },
+  current: { screen: string; title: string; is_fullscreen: boolean }
+): boolean {
+  return (
+    current.screen !== before.screen ||
+    current.title !== before.title ||
+    current.is_fullscreen !== before.is_fullscreen
+  );
+}
+
 // Special key name → escape sequence mapping
 export const KEY_MAP: Record<string, string> = {
   "ctrl+a": "\x01", "ctrl+b": "\x02", "ctrl+c": "\x03", "ctrl+d": "\x04",
@@ -38,6 +62,8 @@ export class Session {
   private _status: "running" | "exited" = "running";
   private _exitCode: number | null = null;
   private lastSnapshot: string = "";
+  private _title: string = "";
+  private _isFullscreen: boolean = false;
 
   // Listeners notified on any PTY data or exit
   private changeListeners: Array<() => void> = [];
@@ -56,6 +82,16 @@ export class Session {
     const rows = options.rows ?? 30;
 
     this.terminal = new Terminal({ cols, rows, allowProposedApi: true });
+
+    this.terminal.onTitleChange((title: string) => {
+      this._title = extractTitle(title);
+      this.notifyListeners();
+    });
+
+    this.terminal.buffer.onBufferChange(() => {
+      this._isFullscreen = extractIsFullscreen(this.terminal.buffer);
+      this.notifyListeners();
+    });
 
     const shell = process.env.SHELL ?? "/bin/sh";
     this.ptyProcess = pty.spawn(shell, ["-c", command], {
@@ -116,7 +152,7 @@ export class Session {
    * Trailing empty lines and per-line trailing spaces are removed.
    * Updates lastSnapshot for change detection.
    */
-  snapshot(): { lines: string[]; cursor: { x: number; y: number }; changed: boolean; highlights: Highlight[] } {
+  snapshot(): { lines: string[]; cursor: { x: number; y: number }; changed: boolean; highlights: Highlight[]; title: string; is_fullscreen: boolean } {
     const buf = this.terminal.buffer.active;
     const lines: string[] = [];
     for (let i = 0; i < this.terminal.rows; i++) {
@@ -139,6 +175,8 @@ export class Session {
       cursor: { x: buf.cursorX, y: buf.cursorY },
       changed,
       highlights,
+      title: this._title,
+      is_fullscreen: this._isFullscreen,
     };
   }
 
@@ -149,8 +187,10 @@ export class Session {
   async wait(
     timeoutMs: number = 3000,
     text?: string
-  ): Promise<{ lines: string[]; cursor: { x: number; y: number }; changed: boolean; highlights: ReturnType<typeof extractHighlights> }> {
+  ): Promise<{ lines: string[]; cursor: { x: number; y: number }; changed: boolean; highlights: ReturnType<typeof extractHighlights>; title: string; is_fullscreen: boolean }> {
     const beforeScreen = this.lastSnapshot;
+    const beforeTitle = this._title;
+    const beforeFullscreen = this._isFullscreen;
 
     if (this._status === "exited") {
       return this.snapshot();
@@ -189,8 +229,11 @@ export class Session {
           // Pattern mode: resolve when pattern appears in screen
           if (new RegExp(text).test(currentScreen)) { done(); return; }
         } else {
-          // Change mode: resolve when screen differs from before AND has been idle
-          if (currentScreen !== beforeScreen) {
+          // Change mode: resolve when any observable state differs from before AND has been idle
+          if (hasChanged(
+            { screen: beforeScreen, title: beforeTitle, is_fullscreen: beforeFullscreen },
+            { screen: currentScreen, title: this._title, is_fullscreen: this._isFullscreen }
+          )) {
             if (idleTimer) clearTimeout(idleTimer);
             idleTimer = setTimeout(done, 100);
           }
