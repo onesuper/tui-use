@@ -36,13 +36,13 @@ Perfect for **Claude Code**, **Cursor**, **Codex**, **Gemini CLI**, **OpenCode**
 
 ## Installation
 
-### Option 1: Install from npm (recommended)
+**From npm (recommended):**
 
 ```bash
 npm install -g tui-use
 ```
 
-### Install from source
+**From source:**
 
 ```bash
 git clone https://github.com/onesuper/tui-use.git
@@ -52,9 +52,11 @@ npm run build
 npm link
 ```
 
-## Coding Agents
+## Claude Code Plugin
 
-### Claude Code: Install from self-hosted marketplace
+**Note:** You must install the CLI (see Installation section above) before using the plugin — the plugin only provides skill definitions, the CLI provides the actual PTY functionality.
+
+### Install from self-hosted marketplace
 
 #### Step 1: Add the marketplace
 
@@ -74,7 +76,7 @@ npm link
 /reload-plugins
 ```
 
-### More agent is coming...
+**More agents coming soon...**
 
 
 ## Daemon Management
