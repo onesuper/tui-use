@@ -1,0 +1,22 @@
+{
+  "name": "tui-use",
+  "metadata": {
+    "description": "TUI automation for AI agents — interact with REPLs, installers, and TUI apps"
+  },
+  "owner": {
+    "name": "onesuper",
+    "email": "onsuper.cheng@gmail.com"
+  },
+  "plugins": [
+    {
+      "name": "tui-use",
+      "description": "TUI automation for AI agents — Like BrowserUse, but for the terminal",
+      "version": "0.1.0",
+      "source": "./",
+      "author": {
+        "name": "onesuper",
+        "email": "onsuper.cheng@gmail.com"
+      }
+    }
+  ]
+}

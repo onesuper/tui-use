@@ -38,9 +38,33 @@ Perfect for **Claude Code**, **Cursor**, **Codex**, **Gemini CLI**, **OpenCode**
 
 ### Claude Code
 
-Copy the skill file to your Claude Code skills directory:
+**Option 1: Install from official marketplace (recommended)**
 
+In Claude Code, run:
+```
+/plugin install tui-use
+```
+
+**Option 2: Install from self-hosted marketplace**
+
+In Claude Code, register the marketplace first:
+```
+/plugin marketplace add onesuper/tui-use
+```
+Then install the plugin from this marketplace:
+```
+/plugin install tui-use@tui-use
+```
+
+**Option 3: Manual installation**
+
+Copy the skill file to your Claude Code skills directory:
 ```bash
+git clone https://github.com/onesuper/tui-use.git
+cd tui-use
+npm install
+npm run build
+npm link
 cp skills/tui-use.md ~/.claude/skills/
 ```
 

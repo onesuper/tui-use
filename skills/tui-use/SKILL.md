@@ -1,3 +1,8 @@
+---
+name: tui-use
+description: Operate interactive terminal programs (REPLs, installers, TUI apps) using PTY automation. Use when you need to interact with programs that require keyboard input.
+---
+
 # tui-use — TUI Automation for AI Agents
 
 Use `tui-use` to operate interactive terminal programs that require keyboard input.
