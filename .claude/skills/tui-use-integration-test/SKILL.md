@@ -1,6 +1,6 @@
 ---
 name: tui-use-integration-test
-description: Use when you need to verify tui-use end-to-end behavior — driving interactive CLI programs, Python REPL, --text pattern matching, --timeout, and special key handling.
+description: Use when you need to verify tui-use end-to-end behavior — driving interactive CLI programs, Python REPL, --text pattern matching, custom timeout, special key handling, and highlights detection.
 ---
 
 # tui-use Integration Tests
@@ -140,18 +140,90 @@ tui-use kill
 
 ---
 
+## Test 6: Vertical menu highlights
+
+**Goal:** Verify `highlights` correctly identifies the selected item in a vertical menu, and updates when selection changes.
+
+```bash
+tui-use start python3 examples/menu.py
+tui-use wait --text "Option"
+```
+Assert: `highlights` contains exactly one entry with `text` = `"Option A"`
+
+**Step 6.1** — Move selection down:
+```bash
+tui-use press arrow_down
+tui-use wait
+```
+Assert: `highlights` contains exactly one entry with `text` = `"Option B"`
+
+```bash
+tui-use kill
+```
+
+---
+
+## Test 7: Inline tab bar highlights
+
+**Goal:** Verify `highlights` detects an inline inverse span (partial line), and tracks it as selection moves across tabs.
+
+```bash
+tui-use start python3 examples/tabs.py
+tui-use wait --text "Files"
+```
+Assert: `highlights` contains one entry with `text` = `"Files"`
+
+**Step 7.1** — Move to next tab:
+```bash
+tui-use press arrow_right
+tui-use wait
+```
+Assert: `highlights` contains one entry with `text` = `"Git"`, on the same `line` as before
+
+```bash
+tui-use kill
+```
+
+---
+
+## Test 8: Dialog box highlights inside box-drawing border
+
+**Goal:** Verify `highlights` correctly detects inline buttons inside a box-drawing border, and switches when selection changes.
+
+```bash
+tui-use start python3 examples/dialog.py
+tui-use wait --text "Delete"
+```
+Assert: `highlights` contains one entry with `text` = `"Yes"`
+
+**Step 8.1** — Switch to No:
+```bash
+tui-use press arrow_right
+tui-use wait
+```
+Assert: `highlights` contains one entry with `text` = `"No"`, on the same `line` as before
+
+```bash
+tui-use kill
+```
+
+---
+
 ## Summary
 
 Report results as:
 
 ```
-Test 1: Basic prompt CLI     — PASS / FAIL
-Test 2: Python REPL          — PASS / FAIL
-Test 3: --text pattern       — PASS / FAIL
-Test 4: Custom timeout       — PASS / FAIL
-Test 5: ctrl+c interrupts    — PASS / FAIL
+Test 1: Basic prompt CLI          — PASS / FAIL
+Test 2: Python REPL               — PASS / FAIL
+Test 3: --text pattern            — PASS / FAIL
+Test 4: Custom timeout            — PASS / FAIL
+Test 5: ctrl+c interrupts         — PASS / FAIL
+Test 6: Vertical menu highlights  — PASS / FAIL
+Test 7: Inline tab bar highlights — PASS / FAIL
+Test 8: Dialog box highlights     — PASS / FAIL
 
-5/5 passed
+8/8 passed
 ```
 
-If any test fails, include the actual `screen` value and what was expected.
+If any test fails, include the actual `screen` and `highlights` values and what was expected.
