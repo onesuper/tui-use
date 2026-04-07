@@ -2,14 +2,15 @@
   "name": "tui-use",
   "version": "0.1.0",
   "description": "TUI automation for AI agents — like BrowserUse, but for the terminal",
-  "bin": {
-    "tui-use": "./dist/cli.js"
-  },
+  "bin": "./dist/cli.js",
   "scripts": {
-    "build": "tsc",
+    "build": "tsc && chmod +x dist/cli.js",
+    "clean": "rm -rf node_modules package-lock.json dist ~/.tui-use",
     "dev": "tsc --watch",
     "start": "node dist/cli.js",
-    "test": "vitest run --exclude 'dist/**'"
+    "test": "vitest run --exclude 'dist/**'",
+    "postinstall": "npm run rebuild-native",
+    "rebuild-native": "rm -rf node_modules/node-pty/prebuilds && npm rebuild node-pty"
   },
   "dependencies": {
     "@xterm/headless": "^6.0.0",
@@ -19,7 +20,7 @@
   "devDependencies": {
     "@types/node": "^20.0.0",
     "typescript": "^5.0.0",
-    "vitest": "^4.1.2"
+    "vitest": "^3.2.4"
   },
   "engines": {
     "node": ">=18.0.0"
