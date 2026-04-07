@@ -11,30 +11,51 @@ Works with prompt-based CLIs, REPLs, interactive installers, and TUI apps (htop,
 ## Core Workflow
 
 ```
-start → wait → send → wait → send → wait → ... → kill
+start → use → wait → type/press → wait → ... → kill
 ```
 
-Think of it like browser automation: `wait` is your screenshot, `send` is your click/type.
+**Always call `use` first** to set the current session, then all other commands work on that session.
 
 ## Commands
 
-### Start a session
-```bash
-SID=$(tui-use start python3 myapp.py)
-SID=$(tui-use start -- python3 -c 'name=input("Name: "); print("Hi", name)')
-SID=$(tui-use start htop)
+### Core Commands
+
 ```
+tui-use start <cmd>      # Start program, returns session_id (becomes current)
+tui-use use <id>         # Set current session
+tui-use wait [ms]        # Wait for screen to change (default: 3000ms)
+tui-use type <text>      # Type text (\n for Enter, \t for Tab)
+tui-use press <key>      # Press key (ctrl+c, arrow_up, enter, etc.)
+tui-use snapshot         # Get current screen immediately
+tui-use kill             # Kill current session
+tui-use list             # List all sessions
+```
+
+#### Start a session
+
+```bash
+tui-use start python3 myapp.py
+tui-use start -- python3 -c 'name=input("Name: "); print("Hi", name)'
+tui-use start htop
+```
+
+Returns `session_id` and automatically sets it as **current session**.
 
 Options: `--cwd <dir>`, `--label <name>`, `--cols <n>`, `--rows <n>`
 
 ---
 
-### Wait for screen to change
+#### Waiting
+
+`wait` is the primary way to observe the terminal state. It blocks until the screen changes or a timeout occurs.
+
 ```bash
-tui-use wait $SID
+tui-use wait              # wait for screen to change (default 3000ms)
+tui-use wait 5000         # wait up to 5000ms
+tui-use wait --text ">>>" # wait until screen contains pattern (regex supported)
 ```
 
-Returns JSON with current screen content after the screen settles:
+Returns JSON with screen content:
 ```json
 {
   "session_id": "abc12345",
@@ -46,129 +67,93 @@ Returns JSON with current screen content after the screen settles:
 }
 ```
 
-Options:
-- `--until <pattern>` — wait until screen contains regex pattern
-- `--timeout <ms>` — max wait time (default: 3000ms)
-
-**Always call `wait` before sending input** — it ensures the program is ready.
+**Always call `wait` before type/press** — ensures program is ready.
 
 ---
 
-### Take an immediate screen capture
+#### Type text
+
 ```bash
-tui-use screen $SID
+tui-use type "hello world"
+tui-use type "hello\n"         # with Enter
 ```
 
-Returns the current screen without waiting. Same JSON format as `wait`.
-Use when you want to check the current state without blocking.
+Escapes: `\n` = Enter, `\t` = Tab
 
 ---
 
-### Type input or send a key
+#### Press key
+
 ```bash
-tui-use type $SID "hello\n"        # text + Enter
-tui-use type $SID "ctrl+c"         # interrupt
-tui-use type $SID "arrow_down"     # navigate
-tui-use type $SID "q"              # single key
+tui-use press ctrl+c
+tui-use press arrow_down
+tui-use press enter
+tui-use press q
 ```
 
-**Supported special keys:**
-`ctrl+c`, `ctrl+d`, `ctrl+z`, `ctrl+a/b/e/f/k/l/u/w`
-`arrow_up`, `arrow_down`, `arrow_left`, `arrow_right`
-`page_up`, `page_down`, `home`, `end`
-`enter`, `tab`, `escape`, `backspace`, `delete`
-`f1`–`f10`
+Keys: `ctrl+c`, `ctrl+d`, `arrow_up/down/left/right`, `enter`, `escape`, `tab`, `f1-f10`, etc.
 
-To get the full up-to-date list: `tui-use keys`
-
-**Text escapes:** `\n` = Enter, `\r` = carriage return, `\t` = Tab
+Full list: `tui-use keys`
 
 ---
 
-### List sessions
-```bash
-tui-use list
-```
+### Daemon Management
 
-### Kill a session
+The daemon auto-starts on first command and auto-exits after 5 minutes of inactivity. Usually you don't need to manage it manually.
+
 ```bash
-tui-use kill $SID
+tui-use daemon status    # check if daemon is running
+tui-use daemon stop      # stop the daemon
+tui-use daemon restart   # restart the daemon
 ```
 
 ---
 
-## Rules for AI Agents
+## Rules
 
-1. **wait before send** — always call `wait` first to confirm the program is ready
-2. **check `status`** — if `"exited"`, don't send more input
-3. **use `--until`** for slow-starting programs — `tui-use wait $SID --until "pattern"`
-4. **kill when done** — always clean up sessions
+1. **use first** — always set current session before other commands
+2. **wait before type/press** — confirms program is ready
+3. **check status** — if `"exited"`, don't send more input
+4. **kill when done** — clean up sessions
 
 ---
 
-## Example: Prompt-based CLI
+## Example
 
 ```bash
-SID=$(tui-use start python3 examples/ask.py)
+# Start (automatically becomes current session)
+tui-use start python3 examples/ask.py
 
-tui-use wait $SID                    # wait for first prompt
-tui-use type $SID "Alice\n"
-tui-use wait $SID                    # wait for next prompt
-tui-use type $SID "30\n"
-tui-use wait $SID                    # get final output
-tui-use kill $SID
+# Interact
+tui-use wait                    # wait for prompt
+tui-use type "Alice"
+tui-use press enter
+tui-use wait                    # wait for output
+tui-use kill                    # cleanup
 ```
 
 ---
 
-## Example: Python REPL
+## Multiple Sessions
 
 ```bash
-SID=$(tui-use start python3)
+# Start two sessions
+SID1=$(tui-use start htop --label monitor)
+SID2=$(tui-use start python3)
 
-tui-use wait $SID --until ">>>"
-tui-use type $SID "x = 42\n"
-tui-use wait $SID --until ">>>"
-tui-use type $SID "print(x * 2)\n"
-tui-use wait $SID --until ">>>"
-# screen will contain "84"
+# Work with first
+tui-use use $SID1
+tui-use wait --text "PID"
+tui-use press q
+tui-use kill
 
-tui-use type $SID "exit()\n"
-tui-use wait $SID
-tui-use kill $SID
-```
-
----
-
-## Example: TUI app (htop)
-
-```bash
-SID=$(tui-use start htop --rows 40 --cols 200)
-
-tui-use wait $SID --until "PID"     # wait for htop to fully load
-tui-use screen $SID               # inspect current screen
-
-tui-use type $SID "arrow_down"      # navigate
-tui-use wait $SID
-
-tui-use type $SID "q"               # quit
-tui-use wait $SID
-tui-use kill $SID
-```
-
----
-
-## Example: Interactive installer
-
-```bash
-SID=$(tui-use start bash install.sh)
-
-tui-use wait $SID --until "Install\?"
-tui-use type $SID "y\n"
-
-tui-use wait $SID --until "install path"
-tui-use type $SID "/usr/local\n"
-
-tui-use wait $SID --timeout 10000   # installation may take a while
-tui-use kill $SID
+# Work with second
+tui-use use $SID2
+tui-use wait --text ">>>"
+tui-use type "print(1+1)"
+tui-use press enter
+tui-use wait --text ">>>"
+tui-use type "exit()"
+tui-use press enter
+tui-use kill
 ```

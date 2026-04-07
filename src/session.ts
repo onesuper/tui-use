@@ -148,7 +148,7 @@ export class Session {
    */
   async wait(
     timeoutMs: number = 3000,
-    until?: string
+    text?: string
   ): Promise<{ lines: string[]; cursor: { x: number; y: number }; changed: boolean; highlights: ReturnType<typeof extractHighlights> }> {
     const beforeScreen = this.lastSnapshot;
 
@@ -185,9 +185,9 @@ export class Session {
         while (lines.length > 0 && lines[0] === "") lines.shift();
         const currentScreen = lines.join("\n");
 
-        if (until) {
+        if (text) {
           // Pattern mode: resolve when pattern appears in screen
-          if (new RegExp(until).test(currentScreen)) { done(); return; }
+          if (new RegExp(text).test(currentScreen)) { done(); return; }
         } else {
           // Change mode: resolve when screen differs from before AND has been idle
           if (currentScreen !== beforeScreen) {

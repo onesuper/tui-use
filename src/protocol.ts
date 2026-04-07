@@ -13,7 +13,8 @@ export type Request =
   | WaitRequest
   | SendRequest
   | KillRequest
-  | ListRequest;
+  | ListRequest
+  | UseRequest;
 
 export interface StartRequest {
   type: "start";
@@ -28,29 +29,30 @@ export type ScreenFormat = "text" | "lines" | "numbered" | "pretty";
 
 export interface SnapshotRequest {
   type: "snapshot";
-  session_id: string;
 }
 
 export interface WaitRequest {
   type: "wait";
-  session_id: string;
   timeout_ms?: number;   // default 3000
-  until?: string;        // regex — block until screen contains pattern
+  text?: string;         // substring or regex — block until screen contains text
 }
 
 export interface SendRequest {
   type: "send";
-  session_id: string;
   input: string;
 }
 
 export interface KillRequest {
   type: "kill";
-  session_id: string;
 }
 
 export interface ListRequest {
   type: "list";
+}
+
+export interface UseRequest {
+  type: "use";
+  session_id: string;
 }
 
 // ---- Responses ----
@@ -61,6 +63,7 @@ export type Response =
   | SendResponse
   | KillResponse
   | ListResponse
+  | UseResponse
   | ErrorResponse;
 
 export interface StartResponse {
@@ -98,6 +101,13 @@ export interface KillResponse {
 export interface ListResponse {
   type: "list";
   sessions: SessionInfo[];
+  current?: string;  // current window session_id
+}
+
+export interface UseResponse {
+  type: "use";
+  session_id: string;
+  ok: boolean;
 }
 
 export interface SessionInfo {

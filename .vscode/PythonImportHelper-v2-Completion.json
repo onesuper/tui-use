@@ -1,0 +1,505 @@
+[
+    {
+        "label": "time",
+        "kind": 6,
+        "isExtraImport": true,
+        "importPath": "time",
+        "description": "time",
+        "detail": "time",
+        "documentation": {}
+    },
+    {
+        "label": "sys",
+        "kind": 6,
+        "isExtraImport": true,
+        "importPath": "sys",
+        "description": "sys",
+        "detail": "sys",
+        "documentation": {}
+    },
+    {
+        "label": "tty",
+        "kind": 6,
+        "isExtraImport": true,
+        "importPath": "tty",
+        "description": "tty",
+        "detail": "tty",
+        "documentation": {}
+    },
+    {
+        "label": "termios",
+        "kind": 6,
+        "isExtraImport": true,
+        "importPath": "termios",
+        "description": "termios",
+        "detail": "termios",
+        "documentation": {}
+    },
+    {
+        "label": "winerror",
+        "kind": 6,
+        "isExtraImport": true,
+        "importPath": "winerror",
+        "description": "winerror",
+        "detail": "winerror",
+        "documentation": {}
+    },
+    {
+        "label": "win32pipe",
+        "kind": 6,
+        "isExtraImport": true,
+        "importPath": "win32pipe",
+        "description": "win32pipe",
+        "detail": "win32pipe",
+        "documentation": {}
+    },
+    {
+        "label": "win32file",
+        "kind": 6,
+        "isExtraImport": true,
+        "importPath": "win32file",
+        "description": "win32file",
+        "detail": "win32file",
+        "documentation": {}
+    },
+    {
+        "label": "win32api",
+        "kind": 6,
+        "isExtraImport": true,
+        "importPath": "win32api",
+        "description": "win32api",
+        "detail": "win32api",
+        "documentation": {}
+    },
+    {
+        "label": "pywintypes",
+        "kind": 6,
+        "isExtraImport": true,
+        "importPath": "pywintypes",
+        "description": "pywintypes",
+        "detail": "pywintypes",
+        "documentation": {}
+    },
+    {
+        "label": "threading",
+        "kind": 6,
+        "isExtraImport": true,
+        "importPath": "threading",
+        "description": "threading",
+        "detail": "threading",
+        "documentation": {}
+    },
+    {
+        "label": "os",
+        "kind": 6,
+        "isExtraImport": true,
+        "importPath": "os",
+        "description": "os",
+        "detail": "os",
+        "documentation": {}
+    },
+    {
+        "label": "glob",
+        "kind": 6,
+        "isExtraImport": true,
+        "importPath": "glob",
+        "description": "glob",
+        "detail": "glob",
+        "documentation": {}
+    },
+    {
+        "label": "shutil",
+        "kind": 6,
+        "isExtraImport": true,
+        "importPath": "shutil",
+        "description": "shutil",
+        "detail": "shutil",
+        "documentation": {}
+    },
+    {
+        "label": "subprocess",
+        "kind": 6,
+        "isExtraImport": true,
+        "importPath": "subprocess",
+        "description": "subprocess",
+        "detail": "subprocess",
+        "documentation": {}
+    },
+    {
+        "label": "find_executable",
+        "importPath": "distutils.spawn",
+        "description": "distutils.spawn",
+        "isExtraImport": true,
+        "detail": "distutils.spawn",
+        "documentation": {}
+    },
+    {
+        "label": "common_ship",
+        "kind": 6,
+        "isExtraImport": true,
+        "importPath": "common_ship",
+        "description": "common_ship",
+        "detail": "common_ship",
+        "documentation": {}
+    },
+    {
+        "label": "argparse",
+        "kind": 6,
+        "isExtraImport": true,
+        "importPath": "argparse",
+        "description": "argparse",
+        "detail": "argparse",
+        "documentation": {}
+    },
+    {
+        "label": "multiprocessing",
+        "kind": 6,
+        "isExtraImport": true,
+        "importPath": "multiprocessing",
+        "description": "multiprocessing",
+        "detail": "multiprocessing",
+        "documentation": {}
+    },
+    {
+        "label": "name",
+        "kind": 5,
+        "importPath": "examples.ask",
+        "description": "examples.ask",
+        "peekOfCode": "name = input(\"> \")\ntime.sleep(0.3)\nprint(\"Hello \" + name + \"!\")\nprint(\"What is your age?\")\nage = input(\"> \")\nprint(\"You are \" + age + \" years old!\")",
+        "detail": "examples.ask",
+        "documentation": {}
+    },
+    {
+        "label": "age",
+        "kind": 5,
+        "importPath": "examples.ask",
+        "description": "examples.ask",
+        "peekOfCode": "age = input(\"> \")\nprint(\"You are \" + age + \" years old!\")",
+        "detail": "examples.ask",
+        "documentation": {}
+    },
+    {
+        "label": "render",
+        "kind": 2,
+        "importPath": "examples.dialog",
+        "description": "examples.dialog",
+        "peekOfCode": "def render():\n    print(\"\\033[2J\\033[H\", end=\"\")\n    print()\n    print(\"  ┌─────────────────────────────┐\")\n    print(\"  │                             │\")\n    print(\"  │   Delete file 'foo.txt'?    │\")\n    print(\"  │                             │\")\n    yes = \"\\033[7m  Yes  \\033[0m\" if selected == 0 else \"  Yes  \"\n    no  = \"\\033[7m  No   \\033[0m\" if selected == 1 else \"  No   \"\n    print(f\"  │      {yes}     {no}      │\")",
+        "detail": "examples.dialog",
+        "documentation": {}
+    },
+    {
+        "label": "getch",
+        "kind": 2,
+        "importPath": "examples.dialog",
+        "description": "examples.dialog",
+        "peekOfCode": "def getch():\n    fd = sys.stdin.fileno()\n    old = termios.tcgetattr(fd)\n    try:\n        tty.setraw(fd)\n        return sys.stdin.read(1)\n    finally:\n        termios.tcsetattr(fd, termios.TCSADRAIN, old)\nrender()\nwhile True:",
+        "detail": "examples.dialog",
+        "documentation": {}
+    },
+    {
+        "label": "selected",
+        "kind": 5,
+        "importPath": "examples.dialog",
+        "description": "examples.dialog",
+        "peekOfCode": "selected = 0  # 0 = Yes, 1 = No\ndef render():\n    print(\"\\033[2J\\033[H\", end=\"\")\n    print()\n    print(\"  ┌─────────────────────────────┐\")\n    print(\"  │                             │\")\n    print(\"  │   Delete file 'foo.txt'?    │\")\n    print(\"  │                             │\")\n    yes = \"\\033[7m  Yes  \\033[0m\" if selected == 0 else \"  Yes  \"\n    no  = \"\\033[7m  No   \\033[0m\" if selected == 1 else \"  No   \"",
+        "detail": "examples.dialog",
+        "documentation": {}
+    },
+    {
+        "label": "render",
+        "kind": 2,
+        "importPath": "examples.menu",
+        "description": "examples.menu",
+        "peekOfCode": "def render(selected):\n    for i, opt in enumerate(options):\n        if i == selected:\n            # Inverse color (reverse video) — this is what tui-use currently strips\n            print(f\"\\033[7m  {opt}  \\033[0m\")\n        else:\n            print(f\"  {opt}  \")\ndef getch():\n    fd = sys.stdin.fileno()\n    old = termios.tcgetattr(fd)",
+        "detail": "examples.menu",
+        "documentation": {}
+    },
+    {
+        "label": "getch",
+        "kind": 2,
+        "importPath": "examples.menu",
+        "description": "examples.menu",
+        "peekOfCode": "def getch():\n    fd = sys.stdin.fileno()\n    old = termios.tcgetattr(fd)\n    try:\n        tty.setraw(fd)\n        return sys.stdin.read(1)\n    finally:\n        termios.tcsetattr(fd, termios.TCSADRAIN, old)\nprint(\"Select an option (arrow keys + enter):\\n\")\nrender(selected)",
+        "detail": "examples.menu",
+        "documentation": {}
+    },
+    {
+        "label": "options",
+        "kind": 5,
+        "importPath": "examples.menu",
+        "description": "examples.menu",
+        "peekOfCode": "options = [\"Option A\", \"Option B\", \"Option C\"]\nselected = 0\ndef render(selected):\n    for i, opt in enumerate(options):\n        if i == selected:\n            # Inverse color (reverse video) — this is what tui-use currently strips\n            print(f\"\\033[7m  {opt}  \\033[0m\")\n        else:\n            print(f\"  {opt}  \")\ndef getch():",
+        "detail": "examples.menu",
+        "documentation": {}
+    },
+    {
+        "label": "selected",
+        "kind": 5,
+        "importPath": "examples.menu",
+        "description": "examples.menu",
+        "peekOfCode": "selected = 0\ndef render(selected):\n    for i, opt in enumerate(options):\n        if i == selected:\n            # Inverse color (reverse video) — this is what tui-use currently strips\n            print(f\"\\033[7m  {opt}  \\033[0m\")\n        else:\n            print(f\"  {opt}  \")\ndef getch():\n    fd = sys.stdin.fileno()",
+        "detail": "examples.menu",
+        "documentation": {}
+    },
+    {
+        "label": "render",
+        "kind": 2,
+        "importPath": "examples.picker",
+        "description": "examples.picker",
+        "peekOfCode": "def render():\n    print(\"\\033[2J\\033[H\", end=\"\")\n    print(\"Pick one from each row (arrow keys, enter to confirm):\\n\")\n    for r, rowdata in enumerate(items):\n        line = \"\"\n        for c, item in enumerate(rowdata):\n            if r == row and c == col:\n                line += f\"  \\033[7m {item:10s} \\033[0m\"\n            else:\n                line += f\"   {item:10s}  \"",
+        "detail": "examples.picker",
+        "documentation": {}
+    },
+    {
+        "label": "getch",
+        "kind": 2,
+        "importPath": "examples.picker",
+        "description": "examples.picker",
+        "peekOfCode": "def getch():\n    fd = sys.stdin.fileno()\n    old = termios.tcgetattr(fd)\n    try:\n        tty.setraw(fd)\n        return sys.stdin.read(1)\n    finally:\n        termios.tcsetattr(fd, termios.TCSADRAIN, old)\nrender()\nwhile True:",
+        "detail": "examples.picker",
+        "documentation": {}
+    },
+    {
+        "label": "items",
+        "kind": 5,
+        "importPath": "examples.picker",
+        "description": "examples.picker",
+        "peekOfCode": "items = [\n    [\"Red\",    \"Green\",  \"Blue\"  ],\n    [\"Circle\", \"Square\", \"Triangle\"],\n    [\"Small\",  \"Medium\", \"Large\" ],\n]\nrow, col = 0, 0\ndef render():\n    print(\"\\033[2J\\033[H\", end=\"\")\n    print(\"Pick one from each row (arrow keys, enter to confirm):\\n\")\n    for r, rowdata in enumerate(items):",
+        "detail": "examples.picker",
+        "documentation": {}
+    },
+    {
+        "label": "render",
+        "kind": 2,
+        "importPath": "examples.tabs",
+        "description": "examples.tabs",
+        "peekOfCode": "def render():\n    print(\"\\033[2J\\033[H\", end=\"\")  # clear screen\n    print(\"Editor\")\n    print()\n    # Render tab bar — selected tab is inverse\n    bar = \"\"\n    for i, tab in enumerate(tabs):\n        if i == selected:\n            bar += f\"\\033[7m  {tab}  \\033[0m\"\n        else:",
+        "detail": "examples.tabs",
+        "documentation": {}
+    },
+    {
+        "label": "getch",
+        "kind": 2,
+        "importPath": "examples.tabs",
+        "description": "examples.tabs",
+        "peekOfCode": "def getch():\n    fd = sys.stdin.fileno()\n    old = termios.tcgetattr(fd)\n    try:\n        tty.setraw(fd)\n        return sys.stdin.read(1)\n    finally:\n        termios.tcsetattr(fd, termios.TCSADRAIN, old)\nrender()\nwhile True:",
+        "detail": "examples.tabs",
+        "documentation": {}
+    },
+    {
+        "label": "tabs",
+        "kind": 5,
+        "importPath": "examples.tabs",
+        "description": "examples.tabs",
+        "peekOfCode": "tabs = [\"Files\", \"Git\", \"Search\", \"Extensions\"]\nselected = 0\ndef render():\n    print(\"\\033[2J\\033[H\", end=\"\")  # clear screen\n    print(\"Editor\")\n    print()\n    # Render tab bar — selected tab is inverse\n    bar = \"\"\n    for i, tab in enumerate(tabs):\n        if i == selected:",
+        "detail": "examples.tabs",
+        "documentation": {}
+    },
+    {
+        "label": "selected",
+        "kind": 5,
+        "importPath": "examples.tabs",
+        "description": "examples.tabs",
+        "peekOfCode": "selected = 0\ndef render():\n    print(\"\\033[2J\\033[H\", end=\"\")  # clear screen\n    print(\"Editor\")\n    print()\n    # Render tab bar — selected tab is inverse\n    bar = \"\"\n    for i, tab in enumerate(tabs):\n        if i == selected:\n            bar += f\"\\033[7m  {tab}  \\033[0m\"",
+        "detail": "examples.tabs",
+        "documentation": {}
+    },
+    {
+        "label": "message",
+        "kind": 5,
+        "importPath": "node_modules.node-pty.deps.winpty.misc.DebugClient",
+        "description": "node_modules.node-pty.deps.winpty.misc.DebugClient",
+        "peekOfCode": "message = \"[%05.3f %s]: %s\" % (time.time() % 100000, sys.argv[0], sys.argv[1])\nwin32pipe.CallNamedPipe(\n    \"\\\\\\\\.\\\\pipe\\\\DebugServer\",\n    message.encode(),\n    16,\n    win32pipe.NMPWAIT_WAIT_FOREVER)",
+        "detail": "node_modules.node-pty.deps.winpty.misc.DebugClient",
+        "documentation": {}
+    },
+    {
+        "label": "serverPipe",
+        "kind": 5,
+        "importPath": "node_modules.node-pty.deps.winpty.misc.DebugServer",
+        "description": "node_modules.node-pty.deps.winpty.misc.DebugServer",
+        "peekOfCode": "serverPipe = win32pipe.CreateNamedPipe(\n    \"\\\\\\\\.\\\\pipe\\\\DebugServer\",\n    win32pipe.PIPE_ACCESS_DUPLEX,\n    win32pipe.PIPE_TYPE_MESSAGE | win32pipe.PIPE_READMODE_MESSAGE,\n    win32pipe.PIPE_UNLIMITED_INSTANCES,\n    MSG_SIZE,\n    MSG_SIZE,\n    10 * 1000,\n    None)\nwhile True:",
+        "detail": "node_modules.node-pty.deps.winpty.misc.DebugServer",
+        "documentation": {}
+    },
+    {
+        "label": "i",
+        "kind": 5,
+        "importPath": "node_modules.node-pty.deps.winpty.misc.Spew",
+        "description": "node_modules.node-pty.deps.winpty.misc.Spew",
+        "peekOfCode": "i = 0;\nwhile True:\n    i += 1\n    print(i)",
+        "detail": "node_modules.node-pty.deps.winpty.misc.Spew",
+        "documentation": {}
+    },
+    {
+        "label": "rmrf",
+        "kind": 2,
+        "importPath": "node_modules.node-pty.deps.winpty.ship.common_ship",
+        "description": "node_modules.node-pty.deps.winpty.ship.common_ship",
+        "peekOfCode": "def rmrf(patterns):\n    for pattern in patterns:\n        for path in glob.glob(pattern):\n            if os.path.isdir(path) and not os.path.islink(path):\n                print \"+ rm -r \" + path\n                sys.stdout.flush()\n                shutil.rmtree(path)\n            elif os.path.isfile(path):\n                print \"+ rm \" + path\n                sys.stdout.flush()",
+        "detail": "node_modules.node-pty.deps.winpty.ship.common_ship",
+        "documentation": {}
+    },
+    {
+        "label": "mkdir",
+        "kind": 2,
+        "importPath": "node_modules.node-pty.deps.winpty.ship.common_ship",
+        "description": "node_modules.node-pty.deps.winpty.ship.common_ship",
+        "peekOfCode": "def mkdir(path):\n    if not os.path.isdir(path):\n        os.makedirs(path)\ndef requireExe(name, guesses):\n    if find_executable(name) is None:\n        for guess in guesses:\n            if os.path.exists(guess):\n                newDir = os.path.dirname(guess)\n                print \"Adding \" + newDir + \" to Path to provide \" + name\n                os.environ[\"Path\"] = newDir + \";\" + os.environ[\"Path\"]",
+        "detail": "node_modules.node-pty.deps.winpty.ship.common_ship",
+        "documentation": {}
+    },
+    {
+        "label": "requireExe",
+        "kind": 2,
+        "importPath": "node_modules.node-pty.deps.winpty.ship.common_ship",
+        "description": "node_modules.node-pty.deps.winpty.ship.common_ship",
+        "peekOfCode": "def requireExe(name, guesses):\n    if find_executable(name) is None:\n        for guess in guesses:\n            if os.path.exists(guess):\n                newDir = os.path.dirname(guess)\n                print \"Adding \" + newDir + \" to Path to provide \" + name\n                os.environ[\"Path\"] = newDir + \";\" + os.environ[\"Path\"]\n    ret = find_executable(name)\n    if ret is None:\n        sys.exit(\"Error: required EXE is missing from Path: \" + name)",
+        "detail": "node_modules.node-pty.deps.winpty.ship.common_ship",
+        "documentation": {}
+    },
+    {
+        "label": "topDir",
+        "kind": 5,
+        "importPath": "node_modules.node-pty.deps.winpty.ship.common_ship",
+        "description": "node_modules.node-pty.deps.winpty.ship.common_ship",
+        "peekOfCode": "topDir = os.path.abspath(os.path.dirname(os.path.dirname(__file__)))\nwith open(topDir + \"/VERSION.txt\", \"rt\") as f:\n    winptyVersion = f.read().strip()\ndef rmrf(patterns):\n    for pattern in patterns:\n        for path in glob.glob(pattern):\n            if os.path.isdir(path) and not os.path.islink(path):\n                print \"+ rm -r \" + path\n                sys.stdout.flush()\n                shutil.rmtree(path)",
+        "detail": "node_modules.node-pty.deps.winpty.ship.common_ship",
+        "documentation": {}
+    },
+    {
+        "label": "commitHash",
+        "kind": 5,
+        "importPath": "node_modules.node-pty.deps.winpty.ship.common_ship",
+        "description": "node_modules.node-pty.deps.winpty.ship.common_ship",
+        "peekOfCode": "commitHash = subprocess.check_output([\"git.exe\", \"rev-parse\", \"HEAD\"]).decode().strip()\ndefaultPathEnviron = \"C:\\\\Windows\\\\System32;C:\\\\Windows\"",
+        "detail": "node_modules.node-pty.deps.winpty.ship.common_ship",
+        "documentation": {}
+    },
+    {
+        "label": "defaultPathEnviron",
+        "kind": 5,
+        "importPath": "node_modules.node-pty.deps.winpty.ship.common_ship",
+        "description": "node_modules.node-pty.deps.winpty.ship.common_ship",
+        "peekOfCode": "defaultPathEnviron = \"C:\\\\Windows\\\\System32;C:\\\\Windows\"",
+        "detail": "node_modules.node-pty.deps.winpty.ship.common_ship",
+        "documentation": {}
+    },
+    {
+        "label": "readArguments",
+        "kind": 2,
+        "importPath": "node_modules.node-pty.deps.winpty.ship.make_msvc_package",
+        "description": "node_modules.node-pty.deps.winpty.ship.make_msvc_package",
+        "peekOfCode": "def readArguments():\n    parser = argparse.ArgumentParser()\n    parser.add_argument(\"--msvc-version\", default=\"2015\")\n    ret = parser.parse_args()\n    if ret.msvc_version not in MSVC_VERSION_TABLE:\n        sys.exit(\"Error: unrecognized version: \" + ret.msvc_version + \". \" +\n            \"Versions: \" + \" \".join(sorted(MSVC_VERSION_TABLE.keys())))\n    return ret\nARGS = readArguments()\ndef checkoutGyp():",
+        "detail": "node_modules.node-pty.deps.winpty.ship.make_msvc_package",
+        "documentation": {}
+    },
+    {
+        "label": "checkoutGyp",
+        "kind": 2,
+        "importPath": "node_modules.node-pty.deps.winpty.ship.make_msvc_package",
+        "description": "node_modules.node-pty.deps.winpty.ship.make_msvc_package",
+        "peekOfCode": "def checkoutGyp():\n    if os.path.isdir(\"build-gyp\"):\n        return\n    subprocess.check_call([\n        \"git.exe\",\n        \"clone\",\n        \"https://chromium.googlesource.com/external/gyp\",\n        \"build-gyp\"\n    ])\ndef cleanMsvc():",
+        "detail": "node_modules.node-pty.deps.winpty.ship.make_msvc_package",
+        "documentation": {}
+    },
+    {
+        "label": "cleanMsvc",
+        "kind": 2,
+        "importPath": "node_modules.node-pty.deps.winpty.ship.make_msvc_package",
+        "description": "node_modules.node-pty.deps.winpty.ship.make_msvc_package",
+        "peekOfCode": "def cleanMsvc():\n    common_ship.rmrf(\"\"\"\n        src/Release src/.vs src/gen\n        src/*.vcxproj src/*.vcxproj.filters src/*.sln src/*.sdf\n    \"\"\".split())\ndef build(arch, packageDir, xp=False):\n    archInfo = ARCH_TABLE[arch]\n    versionInfo = MSVC_VERSION_TABLE[ARGS.msvc_version]\n    devCmdPath = os.path.join(os.environ[versionInfo[\"common_tools_env\"]], \"VsDevCmd.bat\")\n    if not os.path.isfile(devCmdPath):",
+        "detail": "node_modules.node-pty.deps.winpty.ship.make_msvc_package",
+        "documentation": {}
+    },
+    {
+        "label": "build",
+        "kind": 2,
+        "importPath": "node_modules.node-pty.deps.winpty.ship.make_msvc_package",
+        "description": "node_modules.node-pty.deps.winpty.ship.make_msvc_package",
+        "peekOfCode": "def build(arch, packageDir, xp=False):\n    archInfo = ARCH_TABLE[arch]\n    versionInfo = MSVC_VERSION_TABLE[ARGS.msvc_version]\n    devCmdPath = os.path.join(os.environ[versionInfo[\"common_tools_env\"]], \"VsDevCmd.bat\")\n    if not os.path.isfile(devCmdPath):\n        sys.exit(\"Error: MSVC environment script missing: \" + devCmdPath)\n    newEnv = os.environ.copy()\n    newEnv[\"PATH\"] = os.path.dirname(sys.executable) + \";\" + common_ship.defaultPathEnviron\n    commandLine = (\n        '\"' + devCmdPath + '\" && '",
+        "detail": "node_modules.node-pty.deps.winpty.ship.make_msvc_package",
+        "documentation": {}
+    },
+    {
+        "label": "buildPackage",
+        "kind": 2,
+        "importPath": "node_modules.node-pty.deps.winpty.ship.make_msvc_package",
+        "description": "node_modules.node-pty.deps.winpty.ship.make_msvc_package",
+        "peekOfCode": "def buildPackage():\n    versionInfo = MSVC_VERSION_TABLE[ARGS.msvc_version]\n    packageName = \"winpty-%s-%s\" % (\n        common_ship.winptyVersion,\n        versionInfo[\"package_name\"],\n    )\n    packageRoot = os.path.join(common_ship.topDir, \"ship/packages\")\n    packageDir = os.path.join(packageRoot, packageName)\n    packageFile = packageDir + \".zip\"\n    common_ship.rmrf([packageDir])",
+        "detail": "node_modules.node-pty.deps.winpty.ship.make_msvc_package",
+        "documentation": {}
+    },
+    {
+        "label": "ZIP_TOOL",
+        "kind": 5,
+        "importPath": "node_modules.node-pty.deps.winpty.ship.make_msvc_package",
+        "description": "node_modules.node-pty.deps.winpty.ship.make_msvc_package",
+        "peekOfCode": "ZIP_TOOL = common_ship.requireExe(\"7z.exe\", [\n    \"C:\\\\Program Files\\\\7-Zip\\\\7z.exe\",\n    \"C:\\\\Program Files (x86)\\\\7-Zip\\\\7z.exe\",\n])\nMSVC_VERSION_TABLE = {\n    \"2015\" : {\n        \"package_name\" : \"msvc2015\",\n        \"gyp_version\" : \"2015\",\n        \"common_tools_env\" : \"VS140COMNTOOLS\",\n        \"xp_toolset\" : \"v140_xp\",",
+        "detail": "node_modules.node-pty.deps.winpty.ship.make_msvc_package",
+        "documentation": {}
+    },
+    {
+        "label": "MSVC_VERSION_TABLE",
+        "kind": 5,
+        "importPath": "node_modules.node-pty.deps.winpty.ship.make_msvc_package",
+        "description": "node_modules.node-pty.deps.winpty.ship.make_msvc_package",
+        "peekOfCode": "MSVC_VERSION_TABLE = {\n    \"2015\" : {\n        \"package_name\" : \"msvc2015\",\n        \"gyp_version\" : \"2015\",\n        \"common_tools_env\" : \"VS140COMNTOOLS\",\n        \"xp_toolset\" : \"v140_xp\",\n    },\n    \"2013\" : {\n        \"package_name\" : \"msvc2013\",\n        \"gyp_version\" : \"2013\",",
+        "detail": "node_modules.node-pty.deps.winpty.ship.make_msvc_package",
+        "documentation": {}
+    },
+    {
+        "label": "ARCH_TABLE",
+        "kind": 5,
+        "importPath": "node_modules.node-pty.deps.winpty.ship.make_msvc_package",
+        "description": "node_modules.node-pty.deps.winpty.ship.make_msvc_package",
+        "peekOfCode": "ARCH_TABLE = {\n    \"x64\" : {\n        \"msvc_platform\" : \"x64\",\n    },\n    \"ia32\" : {\n        \"msvc_platform\" : \"Win32\",\n    },\n}\ndef readArguments():\n    parser = argparse.ArgumentParser()",
+        "detail": "node_modules.node-pty.deps.winpty.ship.make_msvc_package",
+        "documentation": {}
+    },
+    {
+        "label": "ARGS",
+        "kind": 5,
+        "importPath": "node_modules.node-pty.deps.winpty.ship.make_msvc_package",
+        "description": "node_modules.node-pty.deps.winpty.ship.make_msvc_package",
+        "peekOfCode": "ARGS = readArguments()\ndef checkoutGyp():\n    if os.path.isdir(\"build-gyp\"):\n        return\n    subprocess.check_call([\n        \"git.exe\",\n        \"clone\",\n        \"https://chromium.googlesource.com/external/gyp\",\n        \"build-gyp\"\n    ])",
+        "detail": "node_modules.node-pty.deps.winpty.ship.make_msvc_package",
+        "documentation": {}
+    },
+    {
+        "label": "dllVersion",
+        "kind": 2,
+        "importPath": "node_modules.node-pty.deps.winpty.ship.ship",
+        "description": "node_modules.node-pty.deps.winpty.ship.ship",
+        "peekOfCode": "def dllVersion(path):\n    version = subprocess.check_output(\n        [\"powershell.exe\",\n        \"[System.Diagnostics.FileVersionInfo]::GetVersionInfo(\\\"\" + path + \"\\\").FileVersion\"])\n    return version.strip()\n# Determine other build parameters.\nprint \"Determining Cygwin/MSYS2 DLL versions...\"\nsys.stdout.flush()\nBUILD_TARGETS = [\n    # {",
+        "detail": "node_modules.node-pty.deps.winpty.ship.ship",
+        "documentation": {}
+    },
+    {
+        "label": "buildTarget",
+        "kind": 2,
+        "importPath": "node_modules.node-pty.deps.winpty.ship.ship",
+        "description": "node_modules.node-pty.deps.winpty.ship.ship",
+        "peekOfCode": "def buildTarget(target):\n    packageName = \"winpty-\" + common_ship.winptyVersion + \"-\" + target[\"name\"]\n    if os.path.exists(\"ship\\\\packages\\\\\" + packageName):\n        shutil.rmtree(\"ship\\\\packages\\\\\" + packageName)\n    oldPath = os.environ[\"PATH\"]\n    os.environ[\"PATH\"] = target[\"path\"] + \";\" + common_ship.defaultPathEnviron\n    subprocess.check_call([\"sh.exe\", \"configure\"])\n    makeBinary = target.get(\"make_binary\", \"make.exe\")\n    subprocess.check_call([makeBinary, \"clean\"])\n    makeBaseCmd = [",
+        "detail": "node_modules.node-pty.deps.winpty.ship.ship",
+        "documentation": {}
+    },
+    {
+        "label": "main",
+        "kind": 2,
+        "importPath": "node_modules.node-pty.deps.winpty.ship.ship",
+        "description": "node_modules.node-pty.deps.winpty.ship.ship",
+        "peekOfCode": "def main():\n    oldPath = os.environ[\"PATH\"]\n    for t in BUILD_TARGETS:\n        os.environ[\"PATH\"] = t[\"path\"] + \";\" + common_ship.defaultPathEnviron\n        subprocess.check_output([\"tar.exe\", \"--help\"])\n        subprocess.check_output([\"make.exe\", \"--help\"])\n    for t in BUILD_TARGETS:\n        buildTarget(t)\nif __name__ == \"__main__\":\n    main()",
+        "detail": "node_modules.node-pty.deps.winpty.ship.ship",
+        "documentation": {}
+    },
+    {
+        "label": "BUILD_TARGETS",
+        "kind": 5,
+        "importPath": "node_modules.node-pty.deps.winpty.ship.ship",
+        "description": "node_modules.node-pty.deps.winpty.ship.ship",
+        "peekOfCode": "BUILD_TARGETS = [\n    # {\n    #     \"name\": \"msys\",\n    #     \"path\": \"C:\\\\MinGW\\\\bin;C:\\\\MinGW\\\\msys\\\\1.0\\\\bin\",\n    #     # The parallel make.exe in the original MSYS/MinGW project hangs.\n    #     \"make_binary\": \"mingw32-make.exe\",\n    # },\n    {\n        \"name\": \"msys2-\" + dllVersion(\"C:\\\\msys32\\\\usr\\\\bin\\\\msys-2.0.dll\") + \"-ia32\",\n        \"path\": \"C:\\\\msys32\\\\mingw32\\\\bin;C:\\\\msys32\\\\usr\\\\bin\",",
+        "detail": "node_modules.node-pty.deps.winpty.ship.ship",
+        "documentation": {}
+    }
+]

@@ -118,3 +118,40 @@ function sendToDaemon(req: Request): Promise<Response> {
 function sleep(ms: number): Promise<void> {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
+
+/** Check if daemon is running without starting it */
+export function checkDaemonStatus(): { running: boolean; pid?: number } {
+  if (!fs.existsSync(SOCKET_PATH) || !fs.existsSync(PID_PATH)) {
+    return { running: false };
+  }
+  try {
+    const pid = parseInt(fs.readFileSync(PID_PATH, "utf-8").trim(), 10);
+    process.kill(pid, 0);
+    return { running: true, pid };
+  } catch {
+    return { running: false };
+  }
+}
+
+/** Stop the daemon */
+export function stopDaemon(): boolean {
+  const status = checkDaemonStatus();
+  if (!status.running) {
+    return false;
+  }
+  try {
+    process.kill(status.pid!, "SIGTERM");
+    // Clean up files
+    try { fs.unlinkSync(SOCKET_PATH); } catch {}
+    try { fs.unlinkSync(PID_PATH); } catch {}
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+/** Restart the daemon */
+export async function restartDaemon(): Promise<void> {
+  stopDaemon();
+  await startDaemon();
+}

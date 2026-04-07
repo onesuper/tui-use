@@ -20,6 +20,7 @@ import {
   WaitRequest,
   SendRequest,
   KillRequest,
+  UseRequest,
 } from "./protocol";
 
 const TERMLINK_DIR = path.join(os.homedir(), ".tui-use");
@@ -32,6 +33,11 @@ const IDLE_TIMEOUT_MS = 5 * 60 * 1000; // 5 minutes
 
 const sessions = new Map<string, Session>();
 let idleTimer: NodeJS.Timeout | null = null;
+let currentSession: string | null = null;
+
+function setCurrentSession(id: string | null): void {
+  currentSession = id;
+}
 
 function resetIdleTimer() {
   if (idleTimer) clearTimeout(idleTimer);
@@ -82,20 +88,32 @@ async function handleRequest(req: Request): Promise<Response> {
         rows: r.rows,
       });
       sessions.set(id, session);
+      setCurrentSession(id);  // 新启动的 session 自动设为当前
       resetIdleTimer();
       return { type: "start", session_id: id };
     }
 
-    case "snapshot": {
-      const r = req as SnapshotRequest;
-      const session = sessions.get(r.session_id);
-      if (!session) {
+    case "use": {
+      const r = req as UseRequest;
+      if (!sessions.has(r.session_id)) {
         return { type: "error", message: `Session not found: ${r.session_id}` };
+      }
+      setCurrentSession(r.session_id);
+      return { type: "use", session_id: r.session_id, ok: true };
+    }
+
+    case "snapshot": {
+      if (!currentSession) {
+        return { type: "error", message: "No current session. Run 'tui-use use <session_id>' first." };
+      }
+      const session = sessions.get(currentSession);
+      if (!session) {
+        return { type: "error", message: `Session not found: ${currentSession}` };
       }
       const { lines, cursor, changed, highlights } = session.snapshot();
       return {
         type: "snapshot",
-        session_id: r.session_id,
+        session_id: currentSession,
         lines,
         cursor,
         changed,
@@ -106,15 +124,17 @@ async function handleRequest(req: Request): Promise<Response> {
     }
 
     case "wait": {
-      const r = req as WaitRequest;
-      const session = sessions.get(r.session_id);
-      if (!session) {
-        return { type: "error", message: `Session not found: ${r.session_id}` };
+      if (!currentSession) {
+        return { type: "error", message: "No current session. Run 'tui-use use <session_id>' first." };
       }
-      const { lines, cursor, changed, highlights } = await session.wait(r.timeout_ms ?? 3000, r.until);
+      const session = sessions.get(currentSession);
+      if (!session) {
+        return { type: "error", message: `Session not found: ${currentSession}` };
+      }
+      const { lines, cursor, changed, highlights } = await session.wait((req as WaitRequest).timeout_ms ?? 3000, (req as WaitRequest).text);
       return {
         type: "wait",
-        session_id: r.session_id,
+        session_id: currentSession,
         lines,
         cursor,
         changed,
@@ -126,9 +146,12 @@ async function handleRequest(req: Request): Promise<Response> {
 
     case "send": {
       const r = req as SendRequest;
-      const session = sessions.get(r.session_id);
+      if (!currentSession) {
+        return { type: "error", message: "No current session. Run 'tui-use use <session_id>' first." };
+      }
+      const session = sessions.get(currentSession);
       if (!session) {
-        return { type: "error", message: `Session not found: ${r.session_id}` };
+        return { type: "error", message: `Session not found: ${currentSession}` };
       }
       try {
         session.send(r.input);
@@ -142,20 +165,23 @@ async function handleRequest(req: Request): Promise<Response> {
     }
 
     case "kill": {
-      const r = req as KillRequest;
-      const session = sessions.get(r.session_id);
+      if (!currentSession) {
+        return { type: "error", message: "No current session. Run 'tui-use use <session_id>' first." };
+      }
+      const session = sessions.get(currentSession);
       if (!session) {
-        return { type: "error", message: `Session not found: ${r.session_id}` };
+        return { type: "error", message: `Session not found: ${currentSession}` };
       }
       session.kill();
-      sessions.delete(r.session_id);
+      sessions.delete(currentSession);
+      setCurrentSession(null);
       resetIdleTimer();
       return { type: "kill", ok: true };
     }
 
     case "list": {
       const list = [...sessions.values()].map((s) => s.toInfo());
-      return { type: "list", sessions: list };
+      return { type: "list", sessions: list, current: currentSession ?? undefined };
     }
 
     default: {

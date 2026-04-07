@@ -77,24 +77,42 @@ npm link
 ### More agent is coming...
 
 
+## Daemon Management
+
+The **daemon** runs in the background (`~/.tui-use/daemon.sock`), owns all PTY sessions, and auto-exits after 5 minutes of inactivity.
+
+```bash
+# Check daemon status
+tui-use daemon status
+
+# Stop the daemon
+tui-use daemon stop
+
+# Restart the daemon
+tui-use daemon restart
+```
+
+Usually you don't need to manage the daemon manually — it starts automatically on first command.
+
+
 ## How It Works
 
 ```
 tui-use start "python3 app.py"
       │
-      └── Sends request to local daemon (auto-starts if needed)
-              │
-              ├── Daemon spawns command in a PTY (node-pty)
-              ├── PTY output fed into @xterm/headless VT renderer
-              └── Returns session_id
+      └── Returns session_id, becomes current session
 
-tui-use wait <id>
+tui-use use <id>
       │
-      └── Waits for screen to settle, renders buffer to plain text, returns JSON
+      └── Sets the current session
 
-tui-use type <id> "input\n"
+tui-use wait
       │
-      └── Translates text/key name → bytes, writes to PTY stdin
+      └── Waits for screen to change, returns JSON
+
+tui-use type "hello"
+      │
+      └── Types text to current session
 ```
 
 The **daemon** runs in the background (`~/.tui-use/daemon.sock`), owns all PTY sessions, and auto-exits after 5 minutes of inactivity.
@@ -103,15 +121,42 @@ PTY output is rendered by **`@xterm/headless`** — a full VT100/xterm emulator.
 
 ## CLI Interface
 
-| Command                     | Description                                                |
-| --------------------------- | ---------------------------------------------------------- |
-| `tui-use start <cmd>`       | Start program in PTY, returns `session_id`                 |
-| `tui-use wait <id>`         | Wait for screen to change, return snapshot                 |
-| `tui-use screen <id>`       | Return current screen immediately                          |
-| `tui-use type <id> <input>` | Send text or a special key                                 |
-| `tui-use keys`              | List all supported special key names (e.g. `escape`/`tab`) |
-| `tui-use list`              | List active sessions                                       |
-| `tui-use kill <id>`         | Terminate session                                          |
+### Core Commands
+
+```
+tui-use start <cmd>      # Start program in PTY, returns session_id (becomes current)
+tui-use use <id>         # Set current session (required before other commands)
+tui-use wait [ms]        # Wait for screen to change or timeout (default: 3000ms)
+tui-use type <text>      # Type text (\n for Enter)
+tui-use press <key>      # Press key: ctrl+c, arrow_up, enter, etc.
+tui-use snapshot         # Return current screen snapshot immediately
+tui-use kill             # Kill current session
+tui-use list             # List sessions, shows current
+```
+
+#### Waiting
+
+`wait` is the primary way to observe the terminal state. It blocks until the screen changes or a timeout occurs.
+
+```bash
+tui-use wait              # wait for screen to change (default 3000ms)
+tui-use wait 5000         # wait up to 5000ms
+tui-use wait --text ">>>" # wait until screen contains pattern (regex supported)
+```
+
+### Daemon Management
+
+```
+tui-use daemon status    # Check if daemon is running
+tui-use daemon stop      # Stop the daemon
+tui-use daemon restart   # Restart the daemon
+```
+
+### Other Commands
+
+```
+tui-use keys             # List all supported key names
+```
 
 ## Limitations
 
@@ -128,11 +173,12 @@ npm run build
 npm link
 
 # Try it
-SID=$(tui-use start python3 examples/ask.py)
-tui-use wait $SID
-tui-use type $SID "Alice\n"
-tui-use wait $SID
-tui-use kill $SID
+tui-use start python3 examples/ask.py
+tui-use wait
+tui-use type "Alice"
+tui-use press enter
+tui-use wait
+tui-use kill
 ```
 
 ### Integration Tests

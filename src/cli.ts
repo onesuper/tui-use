@@ -4,15 +4,20 @@
  *
  * Entry point for the `tui-use` CLI command.
  *
- *   tui-use start <cmd>           → session_id
- *   tui-use screen <id>           → JSON screen snapshot
- *   tui-use wait <id>             → JSON screen snapshot (after change)
- *   tui-use send <id> <input>     → ok
- *   tui-use kill <id>             → ok
- *   tui-use list                  → JSON session list
+ *   tui-use start <cmd>      → session_id (becomes current)
+ *   tui-use use <id>         → set current session
+ *   tui-use snapshot         → JSON screen snapshot (current session)
+ *   tui-use wait             → JSON screen snapshot after change (current session)
+ *   tui-use type <text>      → type text to current session
+ *   tui-use press <key>      → press key in current session
+ *   tui-use kill             → terminate current session
+ *   tui-use list             → JSON session list (with current)
+ *   tui-use daemon status    → check daemon status
+ *   tui-use daemon stop      → stop the daemon
+ *   tui-use daemon restart   → restart the daemon
  */
 import { Command } from "commander";
-import { sendRequest } from "./client";
+import { sendRequest, checkDaemonStatus, stopDaemon, restartDaemon } from "./client";
 import { Response, ErrorResponse, ScreenResponse, ScreenFormat } from "./protocol";
 import { KEY_MAP } from "./session";
 
@@ -53,45 +58,72 @@ program
     });
   });
 
-// ---- screen ----
+// ---- snapshot ----
 program
-  .command("screen <session_id>")
-  .description("Return the current rendered screen content")
+  .command("snapshot")
+  .description("Return the current rendered screen snapshot (requires: tui-use use <id> first)")
   .option("--format <fmt>", "Output format: text, lines, numbered, pretty (default: text)", "text")
-  .action(async (session_id: string, opts) => {
-    const res = await sendRequest({ type: "snapshot", session_id });
+  .action(async (opts) => {
+    const res = await sendRequest({ type: "snapshot" });
     handleResponse(res, (r) => printScreen(r as ScreenResponse, opts.format as ScreenFormat));
   });
 
 // ---- wait ----
 program
-  .command("wait <session_id>")
-  .description("Wait for screen to change, then return snapshot")
-  .option("--until <pattern>", "Wait until screen contains regex pattern")
-  .option("--timeout <ms>", "Max wait time in ms (default: 3000)", "3000")
+  .command("wait [duration]")
+  .description(
+    "Wait for screen to change or timeout.\n" +
+    "  wait           → wait for screen to change (default 3000ms)\n" +
+    "  wait 5000      → wait for 5000ms\n" +
+    "  wait --text \"pattern\"  → wait until screen contains text"
+  )
+  .option("--text <pattern>", "Wait until screen contains text (substring or regex)")
   .option("--format <fmt>", "Output format: text, lines, numbered, pretty (default: text)", "text")
-  .action(async (session_id: string, opts) => {
+  .action(async (duration: string | undefined, opts) => {
+    // Parse duration (position arg) or use default
+    let timeoutMs = 3000;
+    if (duration) {
+      const parsed = parseInt(duration, 10);
+      if (!isNaN(parsed)) {
+        timeoutMs = parsed;
+      }
+    }
     const res = await sendRequest({
       type: "wait",
-      session_id,
-      timeout_ms: parseInt(opts.timeout, 10),
-      until: opts.until,
+      timeout_ms: timeoutMs,
+      text: opts.text,
     });
     handleResponse(res, (r) => printScreen(r as ScreenResponse, opts.format as ScreenFormat));
   });
 
 // ---- type ----
 program
-  .command("type <session_id> <input>")
+  .command("type <input...>")
   .description(
-    "Type text or send a key to a session.\n" +
-    "  Text: use \\n for Enter, \\t for Tab\n" +
-    "  Keys: ctrl+c, ctrl+d, arrow_up, arrow_down, arrow_left, arrow_right,\n" +
-    "        enter, escape, tab, backspace, page_up, page_down, f1-f10\n" +
+    "Type text to the current session.\n" +
+    "  Use \\n for Enter, \\t for Tab\n" +
+    "  To specify a different session: tui-use use <id> first"
+  )
+  .action(async (inputParts: string[]) => {
+    const input = inputParts.join(" ");
+    const res = await sendRequest({ type: "send", input });
+    handleResponse(res, (r) => {
+      if (r.type === "send") {
+        console.log(JSON.stringify({ ok: r.ok }));
+      }
+    });
+  });
+
+// ---- press ----
+program
+  .command("press <key>")
+  .description(
+    "Press a key in the current session.\n" +
+    "  Keys: ctrl+c, ctrl+d, arrow_up, arrow_down, enter, escape, tab, etc.\n" +
     "  Run `tui-use keys` for the full key list"
   )
-  .action(async (session_id: string, input: string) => {
-    const res = await sendRequest({ type: "send", session_id, input });
+  .action(async (key: string) => {
+    const res = await sendRequest({ type: "send", input: key });
     handleResponse(res, (r) => {
       if (r.type === "send") {
         console.log(JSON.stringify({ ok: r.ok }));
@@ -101,10 +133,10 @@ program
 
 // ---- kill ----
 program
-  .command("kill <session_id>")
-  .description("Terminate a session")
-  .action(async (session_id: string) => {
-    const res = await sendRequest({ type: "kill", session_id });
+  .command("kill")
+  .description("Terminate the current session (requires: tui-use use <id> first)")
+  .action(async () => {
+    const res = await sendRequest({ type: "kill" });
     handleResponse(res, (r) => {
       if (r.type === "kill") {
         console.log(JSON.stringify({ ok: r.ok }));
@@ -112,10 +144,23 @@ program
     });
   });
 
+// ---- use ----
+program
+  .command("use <session_id>")
+  .description("Set the current session for subsequent commands")
+  .action(async (session_id: string) => {
+    const res = await sendRequest({ type: "use", session_id });
+    handleResponse(res, (r) => {
+      if (r.type === "use") {
+        console.log(JSON.stringify({ ok: r.ok, session_id: r.session_id }));
+      }
+    });
+  });
+
 // ---- keys ----
 program
   .command("keys")
-  .description("List all supported special key names for use with `send`")
+  .description("List all supported special key names for use with `press`")
   .action(() => {
     console.log(JSON.stringify(Object.keys(KEY_MAP), null, 2));
   });
@@ -128,9 +173,52 @@ program
     const res = await sendRequest({ type: "list" });
     handleResponse(res, (r) => {
       if (r.type === "list") {
-        console.log(JSON.stringify(r.sessions, null, 2));
+        const output = {
+          sessions: r.sessions,
+          current: r.current,
+        };
+        console.log(JSON.stringify(output, null, 2));
       }
     });
+  });
+
+// ---- daemon ----
+const daemonCmd = program
+  .command("daemon")
+  .description("Manage the tui-use daemon (background service)");
+
+daemonCmd
+  .command("status")
+  .description("Check if the daemon is running")
+  .action(() => {
+    const status = checkDaemonStatus();
+    if (status.running) {
+      console.log(JSON.stringify({ status: "running", pid: status.pid }, null, 2));
+    } else {
+      console.log(JSON.stringify({ status: "stopped" }, null, 2));
+    }
+  });
+
+daemonCmd
+  .command("stop")
+  .description("Stop the daemon")
+  .action(() => {
+    const stopped = stopDaemon();
+    console.log(JSON.stringify({ ok: stopped, message: stopped ? "Daemon stopped" : "Daemon was not running" }, null, 2));
+  });
+
+daemonCmd
+  .command("restart")
+  .description("Restart the daemon")
+  .action(async () => {
+    try {
+      await restartDaemon();
+      const status = checkDaemonStatus();
+      console.log(JSON.stringify({ ok: true, pid: status.pid }, null, 2));
+    } catch (e: unknown) {
+      console.error(`Error: ${e instanceof Error ? e.message : String(e)}`);
+      process.exit(1);
+    }
   });
 
 // ---- helpers ----
