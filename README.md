@@ -36,37 +36,46 @@ Perfect for **Claude Code**, **Cursor**, **Codex**, **Gemini CLI**, **OpenCode**
 
 ## Installation
 
-### Claude Code
+### Option 1: Install from npm (recommended)
 
-**Option 1: Install from official marketplace (recommended)**
-
-In Claude Code, run:
-```
-/plugin install tui-use
+```bash
+npm install -g tui-use
 ```
 
-**Option 2: Install from self-hosted marketplace**
+### Install from source
 
-In Claude Code, register the marketplace first:
-```
-/plugin marketplace add onesuper/tui-use
-```
-Then install the plugin from this marketplace:
-```
-/plugin install tui-use@tui-use
-```
-
-**Option 3: Manual installation**
-
-Copy the skill file to your Claude Code skills directory:
 ```bash
 git clone https://github.com/onesuper/tui-use.git
 cd tui-use
 npm install
 npm run build
 npm link
-cp skills/tui-use.md ~/.claude/skills/
 ```
+
+## Coding Agents
+
+### Claude Code: Install from self-hosted marketplace
+
+#### Step 1: Add the marketplace
+
+```
+/plugin marketplace add onesuper/tui-use
+```
+
+#### Step 2: Install the plugin
+
+```
+/plugin install tui-use@tui-use
+```
+
+#### Step 3: Reload plugins
+
+```
+/reload-plugins
+```
+
+### More agent is coming...
+
 
 ## How It Works
 
