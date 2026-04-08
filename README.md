@@ -129,6 +129,10 @@ tui-use type "<text>\t"                        # Type with Tab (\t)
 tui-use press <key>                            # Press a key: enter, ctrl+c, arrow_up, etc.
 tui-use scrollup <n>                           # Scroll up to view older content
 tui-use scrolldown <n>                         # Scroll down to view newer content
+tui-use find <pattern>                         # Search text in current screen (regex supported)
+tui-use paste "<text>\n<text>\n"               # Paste multi-line text (each line followed by Enter)
+tui-use info                                   # Show current session details
+tui-use rename <label>                         # Rename current session
 tui-use list                                   # List sessions (pretty format)
 tui-use kill                                   # Kill current session
 ```
