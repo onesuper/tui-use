@@ -21,23 +21,28 @@ start → use → wait → type/press → wait → ... → kill
 ### Core Commands
 
 ```
-tui-use start <cmd> [args...]                  # Start a program
-tui-use start -- <cmd> [args...]               # Start with flags (use -- before -flags)
-tui-use start --cwd <dir> <cmd>                # Run in specific directory
-tui-use start --label <name> <cmd>             # Label session for identification
+tui-use start <cmd>                            # Start a program
+tui-use start --cwd <dir> <cmd>                # Start in specific directory
+tui-use start --label <name> <cmd>             # Start with label
 tui-use start --cols <n> --rows <n> <cmd>      # Custom terminal size (default: 120x30)
 tui-use use <session_id>                       # Switch to a session
-tui-use snapshot                               # Get screen (pretty format)
-tui-use snapshot --format json                 # Get screen, JSON format
-tui-use wait                                   # Wait for change (default: 3000ms)
-tui-use wait <ms>                              # Wait with custom timeout
-tui-use wait --text <pattern>                  # Wait until screen contains text/regex
-tui-use wait --format json                     # Wait for change, get screen JSON format
 tui-use type <text>                            # Type text
-tui-use type "<text>\n"                        # Type with Enter (\n)
-tui-use type "<text>\t"                        # Type with Tab (\t)
-tui-use press <key>                            # Press a key: enter, ctrl+c, arrow_up, etc.
-tui-use list                                   # List sessions (pretty format)
+tui-use type "<text>\n"                        # Type with Enter
+tui-use type "<text>\t"                        # Type with Tab
+tui-use paste "<text>\n<text>\n"               # Multi-line paste (each line + Enter)
+tui-use press <key>                            # Press a key
+tui-use snapshot                               # Get current screen
+tui-use snapshot --format json                 # JSON output
+tui-use scrollup <n>                           # Scroll up to older content
+tui-use scrolldown <n>                         # Scroll down to newer content
+tui-use find <pattern>                         # Search in screen (regex)
+tui-use wait                                   # Wait for screen change
+tui-use wait <ms>                              # Custom timeout (default: 3000ms)
+tui-use wait --text <pattern>                  # Wait until screen contains pattern
+tui-use wait --format json                     # JSON output
+tui-use list                                   # List all sessions
+tui-use info                                   # Show session details
+tui-use rename <label>                         # Rename session
 tui-use kill                                   # Kill current session
 ```
 
