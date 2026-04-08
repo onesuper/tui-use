@@ -63,7 +63,7 @@ export class Session {
   private _exitCode: number | null = null;
   private lastSnapshot: string = "";
   private _title: string = "";
-  private _isFullscreen: boolean = false;
+  private _isFullscreen: boolean;
 
   // Listeners notified on any PTY data or exit
   private changeListeners: Array<() => void> = [];
@@ -82,6 +82,9 @@ export class Session {
     const rows = options.rows ?? 30;
 
     this.terminal = new Terminal({ cols, rows, allowProposedApi: true });
+
+    // Initialize fullscreen status immediately (onBufferChange only fires on changes)
+    this._isFullscreen = extractIsFullscreen(this.terminal.buffer);
 
     this.terminal.onTitleChange((title: string) => {
       this._title = extractTitle(title);

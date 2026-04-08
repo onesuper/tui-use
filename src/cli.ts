@@ -11,14 +11,14 @@
  *   tui-use type <text>      → type text to current session
  *   tui-use press <key>      → press key in current session
  *   tui-use kill             → terminate current session
- *   tui-use list             → JSON session list (with current)
+ *   tui-use list             → session list (with current)
  *   tui-use daemon status    → check daemon status
  *   tui-use daemon stop      → stop the daemon
  *   tui-use daemon restart   → restart the daemon
  */
 import { Command } from "commander";
 import { sendRequest, checkDaemonStatus, stopDaemon, restartDaemon } from "./client";
-import { Response, ErrorResponse, ScreenResponse, ScreenFormat } from "./protocol";
+import { Response, ErrorResponse, ScreenResponse } from "./protocol";
 import { KEY_MAP } from "./session";
 
 const program = new Command();
@@ -62,10 +62,10 @@ program
 program
   .command("snapshot")
   .description("Return the current rendered screen snapshot (requires: tui-use use <id> first)")
-  .option("--format <fmt>", "Output format: text, lines, numbered, pretty (default: text)", "text")
+  .option("--format <fmt>", "Output format: pretty, json (default: pretty)", "pretty")
   .action(async (opts) => {
     const res = await sendRequest({ type: "snapshot" });
-    handleResponse(res, (r) => printScreen(r as ScreenResponse, opts.format as ScreenFormat));
+    handleResponse(res, (r) => printScreen(r as ScreenResponse, opts.format as "pretty" | "json"));
   });
 
 // ---- wait ----
@@ -78,7 +78,7 @@ program
     "  wait --text \"pattern\"  → wait until screen contains text"
   )
   .option("--text <pattern>", "Wait until screen contains text (substring or regex)")
-  .option("--format <fmt>", "Output format: text, lines, numbered, pretty (default: text)", "text")
+  .option("--format <fmt>", "Output format: pretty, json (default: pretty)", "pretty")
   .action(async (duration: string | undefined, opts) => {
     // Parse duration (position arg) or use default
     let timeoutMs = 3000;
@@ -93,7 +93,7 @@ program
       timeout_ms: timeoutMs,
       text: opts.text,
     });
-    handleResponse(res, (r) => printScreen(r as ScreenResponse, opts.format as ScreenFormat));
+    handleResponse(res, (r) => printScreen(r as ScreenResponse, opts.format as "pretty" | "json"));
   });
 
 // ---- type ----
@@ -169,15 +169,44 @@ program
 program
   .command("list")
   .description("List all active sessions")
-  .action(async () => {
+  .option("--format <fmt>", "Output format: pretty, json (default: pretty)", "pretty")
+  .action(async (opts) => {
     const res = await sendRequest({ type: "list" });
     handleResponse(res, (r) => {
       if (r.type === "list") {
-        const output = {
-          sessions: r.sessions,
-          current: r.current,
-        };
-        console.log(JSON.stringify(output, null, 2));
+        const format = opts.format as "pretty" | "json";
+        if (format === "json") {
+          const output = {
+            sessions: r.sessions,
+            current: r.current,
+          };
+          console.log(JSON.stringify(output, null, 2));
+        } else {
+          // Pretty format: table-like output
+          if (r.sessions.length === 0) {
+            console.log("No active sessions");
+            return;
+          }
+
+          // Calculate column widths
+          const idWidth = Math.max(10, ...r.sessions.map((s) => s.session_id.length));
+          const labelWidth = Math.max(5, ...r.sessions.map((s) => s.label.length));
+          const cmdWidth = Math.max(7, ...r.sessions.map((s) => s.command.length));
+
+          // Header
+          const header = `${"SESSION ID".padEnd(idWidth)}  ${"LABEL".padEnd(labelWidth)}  ${"COMMAND".padEnd(cmdWidth)}  STATUS`;
+          console.log(header);
+          console.log("-".repeat(header.length));
+
+          // Rows
+          for (const s of r.sessions) {
+            const currentMark = s.session_id === r.current ? " [current]" : "";
+            const status = s.status + currentMark;
+            console.log(
+              `${s.session_id.padEnd(idWidth)}  ${s.label.padEnd(labelWidth)}  ${s.command.padEnd(cmdWidth)}  ${status}`
+            );
+          }
+        }
       }
     });
   });
@@ -223,50 +252,49 @@ daemonCmd
 
 // ---- helpers ----
 
-function formatScreen(lines: string[], format: ScreenFormat): string | string[] {
-  switch (format) {
-    case "text":
-      return lines.join("\n");
-    case "lines":
-      return lines;
-    case "numbered":
-      return lines.map((line, i) => `${i}: ${line}`).join("\n");
-    case "pretty":
-      return lines.join("\n"); // rendered below outside JSON
-    default:
-      return lines.join("\n");
-  }
-}
-
-function printScreen(r: ScreenResponse, format: ScreenFormat = "text"): void {
-  if (format === "pretty") {
-    const width = 50;
-    const header = `─── ${r.session_id} ${"─".repeat(Math.max(0, width - r.session_id.length - 5))}`;
-    const footer = `─── ${r.status} | cursor (${r.cursor.x},${r.cursor.y}) ${"─".repeat(Math.max(0, width - r.status.length - 20))}`;
-    process.stdout.write(header + "\n");
-    for (const line of r.lines) process.stdout.write(line + "\n");
-    process.stdout.write(footer + "\n");
+function printScreen(r: ScreenResponse, format: "pretty" | "json" = "pretty"): void {
+  if (format === "json") {
+    console.log(
+      JSON.stringify(
+        {
+          session_id: r.session_id,
+          screen: r.lines.join("\n"),
+          cursor: r.cursor,
+          changed: r.changed,
+          status: r.status,
+          exit_code: r.exit_code,
+          title: r.title,
+          is_fullscreen: r.is_fullscreen,
+          cols: r.cols,
+          rows: r.rows,
+          highlights: r.highlights,
+        },
+        null,
+        2
+      )
+    );
     return;
   }
 
-  const screen = formatScreen(r.lines, format);
-  console.log(
-    JSON.stringify(
-      {
-        session_id: r.session_id,
-        screen,
-        cursor: r.cursor,
-        changed: r.changed,
-        status: r.status,
-        exit_code: r.exit_code,
-        title: r.title,
-        is_fullscreen: r.is_fullscreen,
-        highlights: r.highlights,
-      },
-      null,
-      2
-    )
-  );
+  // pretty format - use PTY width (matches the actual screen width)
+  const width = r.cols;
+  const header = `─── ${r.session_id} ${"─".repeat(Math.max(0, width - r.session_id.length - 5))}`;
+
+  const info = `${r.status} | cursor(${r.cursor.x},${r.cursor.y}) | fullscreen:${r.is_fullscreen} | title:"${r.title || ""}"`;
+  const footer = `─── ${info} ${"─".repeat(Math.max(0, width - info.length - 5))}`;
+
+  process.stdout.write(header + "\n");
+  for (const line of r.lines) process.stdout.write(line + "\n");
+  process.stdout.write(footer + "\n");
+
+  // Highlights section
+  if (r.highlights.length > 0) {
+    process.stdout.write(`highlights(${r.highlights.length}):\n`);
+    for (const h of r.highlights) {
+      const text = h.text.slice(0, 40) + (h.text.length > 40 ? "..." : "");
+      process.stdout.write(`  L${h.line}: "${text}"\n`);
+    }
+  }
 }
 
 function handleResponse(res: Response, onSuccess: (r: Response) => void): void {

@@ -82,6 +82,8 @@ export interface ScreenResponse {
   exit_code: number | null;
   title: string;                   // OSC 0/2 window title set by the process
   is_fullscreen: boolean;          // true when app is using the alternate buffer
+  cols: number;                    // terminal width (PTY cols)
+  rows: number;                    // terminal height (PTY rows)
   highlights: Array<{              // inverse-video spans (selected items, highlights)
     line: number;
     col_start: number;

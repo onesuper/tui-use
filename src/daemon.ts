@@ -120,6 +120,8 @@ async function handleRequest(req: Request): Promise<Response> {
         highlights,
         title,
         is_fullscreen,
+        cols: session.cols,
+        rows: session.rows,
         status: session.status,
         exit_code: session.exitCode,
       };
@@ -143,6 +145,8 @@ async function handleRequest(req: Request): Promise<Response> {
         highlights,
         title,
         is_fullscreen,
+        cols: session.cols,
+        rows: session.rows,
         status: session.status,
         exit_code: session.exitCode,
       };

@@ -80,80 +80,85 @@ npm link
 
 **More agents coming soon...**
 
-
-## Daemon Management
-
-The **daemon** runs in the background (`~/.tui-use/daemon.sock`), owns all PTY sessions, and auto-exits after 5 minutes of inactivity.
-
-```bash
-# Check daemon status
-tui-use daemon status
-
-# Stop the daemon
-tui-use daemon stop
-
-# Restart the daemon
-tui-use daemon restart
-```
-
-Usually you don't need to manage the daemon manually — it starts automatically on first command.
-
-
 ## How It Works
 
+Behind the scenes, tui-use runs a daemon that manages PTY sessions:
+
 ```
-tui-use start "python3 app.py"
-      │
-      └── Returns session_id, becomes current session
-
-tui-use use <id>
-      │
-      └── Sets the current session
-
-tui-use wait
-      │
-      └── Waits for screen to change, returns JSON
-
-tui-use type "hello"
-      │
-      └── Types text to current session
+┌─────────────┐     HTTP      ┌─────────────┐     PTY      ┌─────────────┐
+│  tui-use    │ ◄───────────► │   Daemon    │ ◄─────────►  │   Program   │
+│   (CLI)     │               │ (background)│              │  (vim/htop) │
+└─────────────┘               └─────────────┘              └─────────────┘
+                                     │
+                                     ▼
+                              ┌─────────────┐
+                              │  @xterm/    │
+                              │  headless   │
+                              │ (xterm emu) │
+                              └─────────────┘
 ```
 
-The **daemon** runs in the background (`~/.tui-use/daemon.sock`), owns all PTY sessions, and auto-exits after 5 minutes of inactivity.
+**The rendering pipeline:**
 
-PTY output is rendered by **`@xterm/headless`** — a full VT100/xterm emulator. This means ANSI colors, cursor movement, and screen clearing all work correctly. The `screen` field in responses is always clean plain text.
+1. Target program outputs ANSI escape sequences (colors, cursor moves, screen clears)
+2. `@xterm/headless` renders them into a complete terminal screen state
+3. `snapshot` returns clean plain text `screen` content, plus metadata like `highlights` (inverse-video regions), `title` (window title), and `is_fullscreen` (alternate buffer detection)
+
+Agents get the a "polaroid" snapshot of the terminal — not a raw byte stream you need to reassemble.
 
 ## CLI Interface
 
 ### Core Commands
 
 ```
-tui-use start <cmd>      # Start program in PTY, returns session_id (becomes current)
-tui-use use <id>         # Set current session (required before other commands)
-tui-use wait [ms]        # Wait for screen to change or timeout (default: 3000ms)
+tui-use start <cmd>      # Start program in PTY, returns `session_id` and sets it as **current session**.
+tui-use use <session_id> # Set current session
 tui-use type <text>      # Type text (\n for Enter)
 tui-use press <key>      # Press key: ctrl+c, arrow_up, enter, etc.
 tui-use snapshot         # Return current screen snapshot immediately
+tui-use wait [ms]        # Wait for screen to change or timeout (default: 3000ms)
 tui-use kill             # Kill current session
-tui-use list             # List sessions, shows current
+tui-use list             # List sessions
 ```
 
-#### Waiting
-
-`wait` is the primary way to observe the terminal state. It blocks until the screen changes or a timeout occurs.
+### Start a Program
 
 ```bash
-tui-use wait              # wait for screen to change (default 3000ms)
-tui-use wait 5000         # wait up to 5000ms
-tui-use wait --text ">>>" # wait until screen contains pattern (regex supported)
+tui-use start python3 myapp.py
+tui-use start -- python3 -c 'name=input("Name: "); print("Hi", name)'
+tui-use start htop
+tui-use start --cwd ./my-project npm install   # specify working directory
+tui-use start --label "dev-server" npm run dev # label session for easier identification
+tui-use start --cols 120 --rows 40 vim         # custom terminal size (default 80x24)
+```
+
+
+### Observe Terminal State
+
+```bash
+tui-use snapshot              # current screen (pretty format)
+tui-use snapshot --format json  # full JSON with metadata
+
+tui-use wait                    # wait for screen to change (default 3000ms)
+tui-use wait 5000               # wait up to 5000ms
+tui-use wait --text ">>>"       # wait until screen contains pattern (regex supported)
 ```
 
 ### Daemon Management
+
+The **daemon** runs in the background (`~/.tui-use/daemon.sock`), owns all PTY sessions, and auto-exits after 5 minutes of inactivity.
 
 ```
 tui-use daemon status    # Check if daemon is running
 tui-use daemon stop      # Stop the daemon
 tui-use daemon restart   # Restart the daemon
+```
+
+### List Sessions
+
+```bash
+tui-use list                    # table view (pretty format)
+tui-use list --format json      # JSON output for scripting
 ```
 
 ### Other Commands
