@@ -108,45 +108,83 @@ Agents get the a "polaroid" snapshot of the terminal — not a raw byte stream y
 
 ## CLI Interface
 
-### Core Commands
+### Quick Reference
 
 ```bash
-tui-use start <cmd>              # Start program in PTY (options: --cwd, --label, --cols, --rows)
-tui-use use <session_id>         # Set current session for subsequent commands
-tui-use snapshot                 # Get current screen (options: --format pretty|json)
-tui-use wait [ms]                # Wait for screen change (options: --text, --format; default: 3000ms)
-tui-use type <text>              # Type text (use \n for Enter, \t for Tab)
-tui-use press <key>              # Press key: ctrl+c, enter, arrow_up, etc. (see `tui-use keys`)
-tui-use list                     # List sessions (options: --format pretty|json)
+tui-use start <cmd>              # Start a program
+tui-use use <session_id>         # Switch to a session
+tui-use snapshot                 # Get current screen
+tui-use wait [ms]                # Wait for screen change
+tui-use type <text>              # Type text
+tui-use press <key>              # Press a key
+tui-use list                     # List sessions
 tui-use kill                     # Kill current session
 ```
 
-### Command Options
+### Command Reference
 
-**start** — Start a program in a PTY session
+#### start — Start a program in a PTY session
 ```bash
-tui-use start <cmd> [args...]    # Command to run
-            [--cwd <dir>]        # Working directory (default: current dir)
-            [--label <name>]     # Human-readable label (default: command)
-            [--cols <n>]         # Terminal width (default: 120)
-            [--rows <n>]         # Terminal height (default: 30)
+tui-use start <cmd> [args...]
 ```
 
-**snapshot** — Get current screen content immediately
+Options:
+- `--cwd <dir>` — Working directory (default: current directory)
+- `--label <name>` — Human-readable label for the session (default: command string)
+- `--cols <n>` — Terminal width in columns (default: 120)
+- `--rows <n>` — Terminal height in rows (default: 30)
+
+#### use — Set the current session
 ```bash
-tui-use snapshot [--format <fmt>]  # Output format: pretty (default) | json
+tui-use use <session_id>
 ```
 
-**wait** — Wait for screen to change or timeout
+#### snapshot — Get current screen content
 ```bash
-tui-use wait [ms]                # Timeout in milliseconds (default: 3000)
-           [--text <pattern>]    # Wait until screen contains text/regex
-           [--format <fmt>]      # Output format: pretty (default) | json
+tui-use snapshot [--format <fmt>]
 ```
 
-**list** — List all sessions
+Options:
+- `--format <fmt>` — Output format: `pretty` (default) or `json`
+
+#### wait — Wait for screen to change
 ```bash
-tui-use list [--format <fmt>]    # Output format: pretty (default) | json
+tui-use wait [ms] [--text <pattern>] [--format <fmt>]
+```
+
+Arguments:
+- `[ms]` — Timeout in milliseconds (default: 3000)
+
+Options:
+- `--text <pattern>` — Wait until screen contains text (substring or regex)
+- `--format <fmt>` — Output format: `pretty` (default) or `json`
+
+#### type — Type text into the session
+```bash
+tui-use type <text>
+```
+
+Note: Use `\n` for Enter, `\t` for Tab
+
+#### press — Press a special key
+```bash
+tui-use press <key>
+```
+
+Keys: `ctrl+c`, `ctrl+d`, `enter`, `escape`, `tab`, `arrow_up`, `arrow_down`, `arrow_left`, `arrow_right`, `f1`-`f10`, etc.
+Run `tui-use keys` for the full list.
+
+#### list — List all sessions
+```bash
+tui-use list [--format <fmt>]
+```
+
+Options:
+- `--format <fmt>` — Output format: `pretty` (default) or `json`
+
+#### kill — Kill the current session
+```bash
+tui-use kill
 ```
 
 ### Daemon Management
