@@ -42,7 +42,17 @@ Perfect for **Claude Code**, **Cursor**, **Codex**, **Gemini CLI**, **OpenCode**
 
 ```bash
 npm install -g tui-use
+
+# If you get "node-pty binary incompatible" error, rebuild it:
+npm rebuild node-pty
 ```
+
+**Note on Node.js compatibility:** node-pty contains native binaries that may need rebuilding for your Node.js version. If you see `Error: posix_spawnp failed`, run `npm rebuild node-pty`.
+
+**Build tools** (only needed if rebuilding):
+- macOS: `xcode-select --install`
+- Linux: `sudo apt-get install build-essential python3 g++`
+- Windows: Not yet supported
 
 **From source:**
 
