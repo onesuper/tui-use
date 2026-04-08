@@ -110,39 +110,30 @@ Agents get the a "polaroid" snapshot of the terminal — not a raw byte stream y
 
 ### Core Commands
 
-```bash
+```
 tui-use start <cmd> [args...]                  # Start a program
 tui-use start -- <cmd> [args...]               # Start with flags (use -- before -flags)
 tui-use start --cwd <dir> <cmd>                # Run in specific directory
 tui-use start --label <name> <cmd>             # Label session for identification
 tui-use start --cols <n> --rows <n> <cmd>      # Custom terminal size (default: 120x30)
-
 tui-use use <session_id>                       # Switch to a session
-
 tui-use snapshot                               # Get screen (pretty format)
-tui-use snapshot --format json                 # Get screen (JSON format)
-
+tui-use snapshot --format json                 # Get screen, JSON format
 tui-use wait                                   # Wait for change (default: 3000ms)
 tui-use wait <ms>                              # Wait with custom timeout
 tui-use wait --text <pattern>                  # Wait until screen contains text/regex
-tui-use wait <ms> --text <pattern> --format json
-
+tui-use wait --format json                     # Wait for change, get screen JSON format
 tui-use type <text>                            # Type text
 tui-use type "<text>\n"                        # Type with Enter (\n)
 tui-use type "<text>\t"                        # Type with Tab (\t)
-
 tui-use press <key>                            # Press a key: enter, ctrl+c, arrow_up, etc.
-tui-use keys                                   # List all supported keys
-
 tui-use list                                   # List sessions (pretty format)
-tui-use list --format json                     # List sessions (JSON format)
-
 tui-use kill                                   # Kill current session
 ```
 
 ### Daemon Commands
 
-```bash
+```
 tui-use daemon status                          # Check if daemon is running
 tui-use daemon stop                            # Stop the daemon
 tui-use daemon restart                         # Restart the daemon
