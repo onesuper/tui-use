@@ -79,8 +79,3 @@ tui-use kill
 Assert: Both sessions killed
 
 ---
-
-## Summary
-
-- Scenario 1: PASS / FAIL
-- Scenario 2: PASS / FAIL

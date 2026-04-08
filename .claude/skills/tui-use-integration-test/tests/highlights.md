@@ -80,7 +80,7 @@ Assert: `highlights` contains one entry with `text` = "Git", on the same `line` 
 tui-use press arrow_right
 tui-use wait
 ```
-Assert: `highlights` contains "Settings"
+Assert: `highlights` contains "Search"
 
 **Cleanup:**
 ```bash
@@ -123,9 +123,3 @@ tui-use kill
 ```
 
 ---
-
-## Summary
-
-- Scenario 1 (Vertical menu): PASS / FAIL
-- Scenario 2 (Tab bar): PASS / FAIL
-- Scenario 3 (Dialog): PASS / FAIL

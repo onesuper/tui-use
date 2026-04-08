@@ -111,44 +111,30 @@ Agents get the a "polaroid" snapshot of the terminal — not a raw byte stream y
 ### Core Commands
 
 ```
-tui-use start <cmd> [args...]                  # Start a program
-tui-use use <session_id>                       # Switch to a session
-tui-use wait                                   # Wait for screen change
-tui-use type <text>                            # Type text
-tui-use press <key>                            # Press a key
-tui-use snapshot                               # Get current screen
-tui-use kill                                   # Kill current session
-```
-
-### Session Management
-
-```
+tui-use start <cmd>                            # Start a program
 tui-use start --cwd <dir> <cmd>                # Start in specific directory
 tui-use start --label <name> <cmd>             # Start with label
 tui-use start --cols <n> --rows <n> <cmd>      # Custom terminal size (default: 120x30)
-tui-use info                                   # Show session details
-tui-use rename <label>                         # Rename session
-tui-use list                                   # List all sessions
-```
-
-### Interaction Options
-
-```
-tui-use wait <ms>                              # Custom timeout (default: 3000ms)
-tui-use wait --text <pattern>                  # Wait until screen contains pattern
-tui-use wait --format json                     # JSON output
+tui-use use <session_id>                       # Switch to a session
+tui-use type <text>                            # Type text
 tui-use type "<text>\n"                        # Type with Enter
 tui-use type "<text>\t"                        # Type with Tab
 tui-use paste "<text>\n<text>\n"               # Multi-line paste (each line + Enter)
-```
-
-### Screen Operations
-
-```
+tui-use press <key>                            # Press a key
+tui-use snapshot                               # Get current screen
 tui-use snapshot --format json                 # JSON output
 tui-use scrollup <n>                           # Scroll up to older content
 tui-use scrolldown <n>                         # Scroll down to newer content
 tui-use find <pattern>                         # Search in screen (regex)
+tui-use wait                                   # Wait for screen change
+tui-use wait <ms>                              # Custom timeout (default: 3000ms)
+tui-use wait --text <pattern>                  # Wait until screen contains pattern
+tui-use wait --format json                     # JSON output
+tui-use list                                   # List all sessions
+tui-use use <session_id>                       # Switch to a session
+tui-use info                                   # Show session details
+tui-use rename <label>                         # Rename session
+tui-use kill                                   # Kill current session
 ```
 
 ### Daemon Commands
@@ -192,7 +178,7 @@ Run the following command in Claude Code:
 /tui-use-integration-test
 ```
 
-Claude will execute all eight test cases in order and report `PASS / FAIL` for each, with actual screen output on any failure.
+Claude will execute the test suite in order and then report `PASS / FAIL` for each, with actual screen output on any failure.
 
 ## License
 

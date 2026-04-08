@@ -48,13 +48,13 @@ tui-use wait --text "1  "
 
 **Step 2.1** — Find line starting with number:
 ```bash
-tui-use find "^[[:space:]]*1[[:space:]]"
+tui-use find "^\s*1\s"
 ```
 Assert: Returns match with `line` >= 0, `text` contains "1"
 
 **Step 2.2** — Find words starting with A:
 ```bash
-tui-use find "[[:space:]]+A"
+tui-use find "\s+A"
 ```
 Assert: Returns at least one match
 
@@ -122,9 +122,3 @@ tui-use kill
 
 ---
 
-## Summary
-
-- Scenario 1 (Literal text): PASS / FAIL
-- Scenario 2 (Regex): PASS / FAIL
-- Scenario 3 (REPL): PASS / FAIL
-- Scenario 4 (Multiple matches): PASS / FAIL

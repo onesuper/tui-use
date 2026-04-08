@@ -56,14 +56,14 @@ tui-use wait --text "1  "
 
 **Step 2.1** — Try to find B words (initially not visible):
 ```bash
-tui-use find "^[[:space:]]*[0-9]+[[:space:]]+B"
+tui-use find "^\s*[0-9]+\s+B"
 ```
 Assert: May or may not find, depending on visible area
 
 **Step 2.2** — Scroll down and search again:
 ```bash
 tui-use scrolldown 50
-tui-use find "^[[:space:]]*[0-9]+[[:space:]]+B"
+tui-use find "^\s*[0-9]+\s+B"
 ```
 Assert: Now finds matches with B words
 
@@ -102,8 +102,3 @@ tui-use kill
 
 ---
 
-## Summary
-
-- Scenario 1 (Basic scroll): PASS / FAIL
-- Scenario 2 (Scroll + Find): PASS / FAIL
-- Scenario 3 (Boundary limits): PASS / FAIL

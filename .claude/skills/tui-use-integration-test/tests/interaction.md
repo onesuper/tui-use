@@ -105,11 +105,14 @@ tui-use wait --text ">>>"
 ```
 Assert: screen contains "1", "2", and "3"
 
-**Step 3.2** — Paste function definition:
+**Step 3.2** — Paste function definition, complete with blank line, then type the call:
 ```bash
 tui-use paste "def greet(name):
-    return f'Hello, {name}!'
-print(greet('World'))"
+    return f'Hello, {name}!'"
+tui-use press enter
+tui-use wait --text ">>>"
+tui-use type "print(greet('World'))"
+tui-use press enter
 tui-use wait --text ">>>"
 ```
 Assert: screen contains "Hello, World!"
@@ -119,7 +122,7 @@ Assert: screen contains "Hello, World!"
 tui-use type "exit()"
 tui-use press enter
 tui-use wait
-tui-use kill
+tui-use kill 2>/dev/null || true
 ```
 
 ---
@@ -164,10 +167,3 @@ tui-use kill
 
 ---
 
-## Summary
-
-- Scenario 1 (Basic wait/type): PASS / FAIL
-- Scenario 2 (REPL): PASS / FAIL
-- Scenario 3 (Paste): PASS / FAIL
-- Scenario 4 (Timeout): PASS / FAIL
-- Scenario 5 (Special keys): PASS / FAIL
