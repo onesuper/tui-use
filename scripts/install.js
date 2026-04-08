@@ -35,8 +35,16 @@ function testNodePty() {
 }
 
 function installPrebuild(nodePtyDir) {
-  const prebuildPath = path.join(prebuildsDir, platformKey, 'pty.node');
-  if (!fs.existsSync(prebuildPath)) {
+  // First, try node-pty's own bundled prebuild (most reliable)
+  const bundledPrebuild = path.join(nodePtyDir, 'prebuilds', platformKey, 'pty.node');
+  // Fall back to tui-use bundled prebuild
+  const tuiUsePrebuild = path.join(prebuildsDir, platformKey, 'pty.node');
+
+  const prebuildPath = fs.existsSync(bundledPrebuild) ? bundledPrebuild
+    : fs.existsSync(tuiUsePrebuild) ? tuiUsePrebuild
+    : null;
+
+  if (!prebuildPath) {
     console.log(`[tui-use] No prebuild for ${platformKey}`);
     return false;
   }
@@ -62,9 +70,18 @@ function rebuildFromSource(nodePtyDir) {
   console.log('[tui-use] Building node-pty from source...');
   console.log('[tui-use] This may take a minute...');
   try {
+    // Set SDKROOT to help gyp find CLT on macOS when pkgutil receipt check fails
+    const env = { ...process.env };
+    if (process.platform === 'darwin' && !env.SDKROOT) {
+      try {
+        const sdk = execSync('xcrun --show-sdk-path 2>/dev/null', { encoding: 'utf8' }).trim();
+        if (sdk) env.SDKROOT = sdk;
+      } catch {}
+    }
     execSync('npx node-gyp rebuild', {
       stdio: 'inherit',
-      cwd: nodePtyDir
+      cwd: nodePtyDir,
+      env,
     });
     console.log('[tui-use] Build successful');
     return true;
