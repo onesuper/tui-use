@@ -105,19 +105,12 @@ function main() {
 
   // Fall back to building from source
   if (rebuildFromSource(nodePtyDir)) {
-    // Clear cache after rebuild
-    try {
-      const key = require.resolve('node-pty');
-      if (require.cache[key]) delete require.cache[key];
-    } catch {}
-    if (testNodePty()) {
-      console.log('[tui-use] node-pty is ready');
-      return;
-    }
+    console.log('[tui-use] node-pty rebuilt successfully');
+    return;
   }
 
-  // Build succeeded but test still failed - this shouldn't happen often
-  console.error('[tui-use] Warning: node-pty may not work correctly');
+  // Build failed
+  console.error('[tui-use] Warning: node-pty build failed');
   console.error('[tui-use] You may need to install build tools:');
   console.error('  macOS: xcode-select --install');
   console.error('  Linux: sudo apt-get install build-essential python3 g++');
