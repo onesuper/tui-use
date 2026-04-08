@@ -25,9 +25,13 @@ function findNodePtyPath() {
 
 function testNodePty() {
   try {
-    const pty = require('node-pty');
-    const proc = pty.spawn('echo', ['test'], { name: 'xterm-color' });
-    proc.kill();
+    // Test in a subprocess so native addon can be freshly loaded after install.
+    // Use __dirname to resolve node-pty relative to this script, not the caller's cwd.
+    const nodePtyPath = JSON.stringify(path.join(__dirname, '..', 'node_modules', 'node-pty'));
+    execSync(
+      `node -e "const pty=require(${nodePtyPath});const p=pty.spawn('/bin/sh',['-c','exit'],{name:'xterm'});p.kill();"`,
+      { stdio: 'ignore' }
+    );
     return true;
   } catch (e) {
     return false;
@@ -115,11 +119,6 @@ function main() {
 
   // Try to install prebuilt binary
   if (installPrebuild(nodePtyDir)) {
-    // Clear cache if previously loaded
-    try {
-      const key = require.resolve('node-pty');
-      if (require.cache[key]) delete require.cache[key];
-    } catch {}
     if (testNodePty()) {
       console.log('[tui-use] Prebuilt binary works');
       return;
