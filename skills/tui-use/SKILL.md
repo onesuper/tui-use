@@ -21,30 +21,33 @@ start → use → wait → type/press → wait → ... → kill
 ### Core Commands
 
 ```
-tui-use start <cmd>      # Start program, returns session_id (becomes current)
-tui-use use <id>         # Set current session
-tui-use wait [ms]        # Wait for screen to change (default: 3000ms)
-tui-use type <text>      # Type text (\n for Enter, \t for Tab)
-tui-use press <key>      # Press key (ctrl+c, arrow_up, enter, etc.)
-tui-use snapshot         # Get current screen immediately (pretty format)
-tui-use snapshot --format json  # JSON output with full metadata
-tui-use kill             # Kill current session
-tui-use list             # List sessions (table view)
-tui-use list --format json      # JSON output for scripting
+tui-use start <cmd> [args...]                  # Start a program
+tui-use start -- <cmd> [args...]               # Start with flags (use -- before -flags)
+tui-use start --cwd <dir> <cmd>                # Run in specific directory
+tui-use start --label <name> <cmd>             # Label session for identification
+tui-use start --cols <n> --rows <n> <cmd>      # Custom terminal size (default: 120x30)
+tui-use use <session_id>                       # Switch to a session
+tui-use snapshot                               # Get screen (pretty format)
+tui-use snapshot --format json                 # Get screen, JSON format
+tui-use wait                                   # Wait for change (default: 3000ms)
+tui-use wait <ms>                              # Wait with custom timeout
+tui-use wait --text <pattern>                  # Wait until screen contains text/regex
+tui-use wait --format json                     # Wait for change, get screen JSON format
+tui-use type <text>                            # Type text
+tui-use type "<text>\n"                        # Type with Enter (\n)
+tui-use type "<text>\t"                        # Type with Tab (\t)
+tui-use press <key>                            # Press a key: enter, ctrl+c, arrow_up, etc.
+tui-use list                                   # List sessions (pretty format)
+tui-use kill                                   # Kill current session
 ```
 
-#### Start a session
+### Daemon Commands
 
-```bash
-tui-use start python3 myapp.py
-tui-use start -- python3 -c 'name=input("Name: "); print("Hi", name)'
-tui-use start htop
-tui-use start --cwd ./my-project npm install   # specify working directory
-tui-use start --label "dev-server" npm run dev # label session for easier identification
-tui-use start --cols 120 --rows 40 vim         # custom terminal size (default 120x30)
 ```
-
-Returns `session_id` and automatically sets it as **current session**.
+tui-use daemon status                          # Check if daemon is running
+tui-use daemon stop                            # Stop the daemon
+tui-use daemon restart                         # Restart the daemon
+```
 
 ---
 
@@ -52,12 +55,7 @@ Returns `session_id` and automatically sets it as **current session**.
 
 `wait` is the primary way to observe the terminal state. It blocks until the screen changes or a timeout occurs.
 
-```bash
-tui-use wait                    # wait for screen to change (default 3000ms)
-tui-use wait 5000               # wait up to 5000ms
-tui-use wait --text ">>>"       # wait until screen contains pattern (regex supported)
-tui-use wait --format json      # JSON output with full metadata
-```
+**Always call `wait` before type/press** — ensures program is ready.
 
 Default output (pretty format):
 ```
@@ -83,46 +81,6 @@ JSON output (`--format json`):
   "rows": 30,
   "highlights": []
 }
-```
-
-**Always call `wait` before type/press** — ensures program is ready.
-
----
-
-#### Type text
-
-```bash
-tui-use type "hello world"
-tui-use type "hello\n"         # with Enter
-```
-
-Escapes: `\n` = Enter, `\t` = Tab
-
----
-
-#### Press key
-
-```bash
-tui-use press ctrl+c
-tui-use press arrow_down
-tui-use press enter
-tui-use press q
-```
-
-Keys: `ctrl+c`, `ctrl+d`, `arrow_up/down/left/right`, `enter`, `escape`, `tab`, `f1-f10`, etc.
-
-Full list: `tui-use keys`
-
----
-
-### Daemon Management
-
-The daemon auto-starts on first command and auto-exits after 5 minutes of inactivity. Usually you don't need to manage it manually.
-
-```bash
-tui-use daemon status    # check if daemon is running
-tui-use daemon stop      # stop the daemon
-tui-use daemon restart   # restart the daemon
 ```
 
 ---
