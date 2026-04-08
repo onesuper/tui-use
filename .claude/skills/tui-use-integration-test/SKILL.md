@@ -213,6 +213,83 @@ tui-use kill
 
 ---
 
+## Test 9: Advanced features (find, scroll, paste, info, rename)
+
+**Goal:** Test advanced session manipulation features with a complex multi-step workflow using `cat` to display large text content.
+
+```bash
+tui-use start cat -n /usr/share/dict/words  # Large file with numbered lines
+tui-use wait --text "1  "
+```
+Assert: `screen` contains line numbers and words (e.g., `"1  A"` or similar)
+
+**Step 9.1** — Test `info` command to get session details:
+```bash
+tui-use info
+```
+Assert: Output contains `Session ID`, `Label`, `Command: cat`, `Status: running`, `Size: 120x30` (or configured size)
+
+**Step 9.2** — Test `rename` to change session label:
+```bash
+tui-use rename "word-list-session"
+tui-use list
+```
+Assert: `list` output shows `word-list-session` as the label for current session
+
+**Step 9.3** — Test `find` to search for specific text on screen:
+```bash
+tui-use find "^[[:space:]]*1[[:space:]]"  # Find line starting with "1"
+```
+Assert: Returns at least one match with fields `line`, `col_start`, `col_end`, `text`
+
+**Step 9.4** — Test `find` with regex for lines starting with numbers:
+```bash
+tui-use find "^[[:space:]]*[0-9]+[[:space:]]+A"
+```
+Assert: Returns match(es) where `text` contains a word starting with "A"
+
+**Step 9.5** — Test `scroll` to view more content (simulate scrolling down):
+```bash
+tui-use scroll 10
+tui-use snapshot
+```
+Assert: Screen content has changed (shows different lines than before)
+
+**Step 9.6** — Test `find` again after scrolling to find new content:
+```bash
+tui-use find "^[[:space:]]*[0-9]+[[:space:]]+B"
+```
+Assert: Returns match(es) where `text` contains a word starting with "B"
+
+**Step 9.7** — Test `paste` with multi-line input (switch to a Python session):
+```bash
+tui-use kill
+tui-use start python3
+tui-use wait --text ">>>"
+tui-use paste "x = 1
+y = 2
+print(x + y)"
+tui-use wait --text ">>>"
+```
+Assert: `screen` contains `"1"`, `"2"`, and `"3"` (output of print)
+
+**Step 9.8** — Verify `find` works in Python REPL:
+```bash
+tui-use find "print"
+```
+Assert: Returns match with `text` containing `"print"`
+
+**Step 9.9** — Clean up:
+```bash
+tui-use type "exit()"
+tui-use press enter
+tui-use wait
+tui-use kill
+```
+Assert: Session `status` is `"exited"`
+
+---
+
 ## Summary
 
 Report results as:
@@ -226,8 +303,9 @@ Test 5: ctrl+c interrupts         — PASS / FAIL
 Test 6: Vertical menu highlights  — PASS / FAIL
 Test 7: Inline tab bar highlights — PASS / FAIL
 Test 8: Dialog box highlights     — PASS / FAIL
+Test 9: Advanced features         — PASS / FAIL
 
-8/8 passed
+9/9 passed
 ```
 
 If any test fails, include the actual `screen` and `highlights` values and what was expected.
