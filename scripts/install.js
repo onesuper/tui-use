@@ -110,11 +110,20 @@ function main() {
   }
 
   // Build failed
-  console.error('[tui-use] Warning: node-pty build failed');
-  console.error('[tui-use] You may need to install build tools:');
-  console.error('  macOS: xcode-select --install');
-  console.error('  Linux: sudo apt-get install build-essential python3 g++');
-  // Don't exit with error - let npm install complete
+  console.error('[tui-use] node-pty native binding failed to load.\n');
+  if (platform === 'darwin') {
+    console.error('[tui-use] To fix on macOS:');
+    console.error('  xcode-select --install');
+    console.error('  npm install -g tui-use');
+  } else if (platform === 'linux') {
+    console.error('[tui-use] To fix on Linux:');
+    console.error('  sudo apt-get install build-essential python3 g++');
+    console.error('  npm install -g tui-use');
+  } else {
+    console.error('[tui-use] Please install build tools for your platform and re-run:');
+    console.error('  npm install -g tui-use');
+  }
+  process.exit(1);
 }
 
 main();

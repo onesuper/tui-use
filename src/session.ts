@@ -104,13 +104,29 @@ export class Session {
     });
 
     const shell = process.env.SHELL ?? "/bin/sh";
-    this.ptyProcess = pty.spawn(shell, ["-c", command], {
-      name: "xterm-256color",
-      cols,
-      rows,
-      cwd: options.cwd ?? process.cwd(),
-      env: process.env as { [key: string]: string },
-    });
+    try {
+      this.ptyProcess = pty.spawn(shell, ["-c", command], {
+        name: "xterm-256color",
+        cols,
+        rows,
+        cwd: options.cwd ?? process.cwd(),
+        env: process.env as { [key: string]: string },
+      });
+    } catch (e: unknown) {
+      const msg = e instanceof Error ? e.message : String(e);
+      if (msg.includes("posix_spawnp") || msg.includes("binding")) {
+        const platform = process.platform;
+        const fix = platform === "darwin"
+          ? "  xcode-select --install\n  npm install -g tui-use"
+          : platform === "linux"
+          ? "  sudo apt-get install build-essential python3 g++\n  npm install -g tui-use"
+          : "  npm install -g tui-use";
+        throw new Error(
+          `node-pty native binding failed to load.\n\nTo fix on ${platform}:\n${fix}`
+        );
+      }
+      throw e;
+    }
 
     this.ptyProcess.onData((data: string) => {
       this.terminal.write(data);
