@@ -71,7 +71,15 @@ async function startDaemon(): Promise<void> {
       return;
     }
   }
-  throw new Error(`Daemon failed to start after ${DAEMON_START_TIMEOUT_MS}ms`);
+
+  let msg = `Daemon failed to start after ${DAEMON_START_TIMEOUT_MS}ms`;
+  if (process.platform === "win32") {
+    msg += `\n  Check if another daemon is running on port ${DAEMON_PORT}: netstat -ano | findstr :${DAEMON_PORT}`;
+    msg += `\n  Or try: tui-use daemon stop`;
+  } else {
+    msg += `\n  Check daemon stderr for errors`;
+  }
+  throw new Error(msg);
 }
 
 function canConnect(): Promise<boolean> {
@@ -87,6 +95,14 @@ function sendToDaemon(req: Request): Promise<Response> {
     const socket = createConnection();
     let buffer = "";
     let responded = false;
+    let cleaned = false;
+
+    function cleanup() {
+      if (!cleaned) {
+        cleaned = true;
+        socket.destroy();
+      }
+    }
 
     socket.on("connect", () => {
       socket.write(JSON.stringify(req) + "\n");
@@ -106,13 +122,29 @@ function sendToDaemon(req: Request): Promise<Response> {
           } catch (e) {
             reject(new Error(`Invalid response JSON: ${line}`));
           }
-          socket.destroy();
+          cleanup();
         }
       }
     });
 
-    socket.on("error", (e) => {
-      info(`socket error: ${e.message}`);
+    socket.on("error", (e: NodeJS.ErrnoException) => {
+      let message = `socket error: ${e.message}`;
+
+      // Windows-specific error guidance
+      if (process.platform === "win32") {
+        if (e.code === "ECONNREFUSED") {
+          message += `\n  Could not connect to daemon on port ${DAEMON_PORT}. Try: tui-use daemon stop`;
+        } else if (e.code === "EACCES") {
+          message += `\n  Permission denied connecting to daemon. Try running with elevated privileges.`;
+        }
+      } else {
+        if (e.code === "ECONNREFUSED") {
+          message += `\n  Could not connect to daemon socket at ${SOCKET_PATH}`;
+        }
+      }
+
+      info(message);
+      cleanup();
       reject(e);
     });
     socket.on("close", () => {

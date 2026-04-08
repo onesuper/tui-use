@@ -338,16 +338,30 @@ function startServer() {
         }
 
         handleRequest(req).then((res) => {
-          socket.write(JSON.stringify(res) + "\n");
+          try {
+            socket.write(JSON.stringify(res) + "\n");
+          } catch (writeErr) {
+            const msg = writeErr instanceof Error ? writeErr.message : String(writeErr);
+            process.stderr.write(`[daemon] failed to write response: ${msg}\n`);
+          }
         }).catch((err) => {
-          process.stderr.write(`[daemon] handleRequest error: ${err?.stack ?? err}\n`);
-          socket.write(JSON.stringify({ type: "error", message: String(err?.message ?? err) }) + "\n");
+          const errMsg = err instanceof Error ? err.stack ?? err.message : String(err);
+          process.stderr.write(`[daemon] handleRequest error: ${errMsg}\n`);
+          try {
+            socket.write(JSON.stringify({ type: "error", message: String(err instanceof Error ? err.message : err) }) + "\n");
+          } catch (writeErr) {
+            const msg = writeErr instanceof Error ? writeErr.message : String(writeErr);
+            process.stderr.write(`[daemon] failed to write error response: ${msg}\n`);
+          }
         });
       }
     });
 
-    socket.on("error", () => {
-      /* ignore client disconnects */
+    socket.on("error", (err) => {
+      // Log errors but don't crash - client may have disconnected abruptly
+      if ((err as NodeJS.ErrnoException).code !== "ECONNRESET") {
+        process.stderr.write(`[daemon] socket error: ${err.message}\n`);
+      }
     });
   });
 
@@ -358,10 +372,31 @@ function startServer() {
     process.stderr.write(`tui-use daemon started (pid=${process.pid}, listening on ${listenTarget})\n`);
   });
 
-  server.on("error", (err) => {
-    process.stderr.write(`daemon error: ${err.message}\n`);
+  server.on("error", (err: NodeJS.ErrnoException) => {
+    let message = `daemon error: ${err.message}`;
+
+    // Windows-specific error guidance
+    if (process.platform === "win32" && err.code === "EADDRINUSE") {
+      message += `\n  Port ${DAEMON_PORT} is already in use. Try:\n    tui-use daemon stop`;
+    } else if (process.platform === "win32" && err.code === "EACCES") {
+      message += `\n  Permission denied on port ${DAEMON_PORT}. Try running with elevated privileges.`;
+    }
+
+    process.stderr.write(`${message}\n`);
     process.exit(1);
   });
+
+  // Graceful shutdown: kill all sessions and clean up
+  function gracefulShutdown() {
+    for (const session of sessions.values()) {
+      try {
+        session.kill();
+      } catch {
+        /* session may already be dead */
+      }
+    }
+    process.exit(0);
+  }
 
   // Cleanup on exit
   process.on("exit", () => {
@@ -373,9 +408,16 @@ function startServer() {
     }
   });
 
+  // Signal handling (Windows: SIGTERM/SIGINT may not fire, but process can be terminated)
   for (const sig of ["SIGTERM", "SIGINT"] as const) {
-    process.on(sig, () => process.exit(0));
+    process.on(sig, gracefulShutdown);
   }
+
+  // Windows: handle uncaught exceptions gracefully
+  process.on("uncaughtException", (err) => {
+    process.stderr.write(`[daemon] uncaught exception: ${err.message}\n`);
+    gracefulShutdown();
+  });
 
   resetIdleTimer();
 }
