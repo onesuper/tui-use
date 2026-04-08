@@ -17,9 +17,7 @@
     "publish:minor": "npm version minor && npm publish",
     "publish:major": "npm version major && npm publish",
     "start": "node dist/cli.js",
-    "test": "vitest run --exclude 'dist/**'",
-    "postinstall": "npm run rebuild-native",
-    "rebuild-native": "rm -rf node_modules/node-pty/prebuilds && npm rebuild node-pty"
+    "test": "vitest run --exclude 'dist/**'"
   },
   "dependencies": {
     "@xterm/headless": "^6.0.0",
