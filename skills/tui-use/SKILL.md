@@ -14,8 +14,6 @@ Works with prompt-based CLIs, REPLs, interactive installers, and TUI apps (htop,
 start → use → wait → type/press → wait → ... → kill
 ```
 
-**Always call `use` first** to set the current session, then all other commands work on that session.
-
 ## Commands
 
 ### Core Commands
@@ -63,6 +61,7 @@ tui-use daemon restart                         # Restart the daemon
 **Always call `wait` before type/press** — ensures program is ready.
 
 Default output (pretty format):
+
 ```
 ─── session-id ────────────────────────────────────────────
 What is your name?
@@ -72,6 +71,7 @@ highlights(0):
 ```
 
 JSON output (`--format json`):
+
 ```json
 {
   "session_id": "abc12345",

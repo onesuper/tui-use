@@ -11,7 +11,8 @@ export type Request =
   | StartRequest
   | SnapshotRequest
   | WaitRequest
-  | SendRequest
+  | TypeRequest
+  | PressRequest
   | KillRequest
   | ListRequest
   | UseRequest
@@ -42,9 +43,16 @@ export interface WaitRequest {
   text?: string;         // substring or regex — block until screen contains text
 }
 
-export interface SendRequest {
-  type: "send";
+/** Send literal text to the PTY. Supports \n \r \t escape sequences. */
+export interface TypeRequest {
+  type: "type";
   input: string;
+}
+
+/** Press a named key (must exist in KEY_MAP, e.g. "ctrl+r", "enter", "escape"). */
+export interface PressRequest {
+  type: "press";
+  key: string;
 }
 
 export interface KillRequest {
@@ -89,7 +97,8 @@ export interface RenameRequest {
 export type Response =
   | StartResponse
   | ScreenResponse
-  | SendResponse
+  | TypeResponse
+  | PressResponse
   | KillResponse
   | ListResponse
   | UseResponse
@@ -126,8 +135,13 @@ export interface ScreenResponse {
   }>;
 }
 
-export interface SendResponse {
-  type: "send";
+export interface TypeResponse {
+  type: "type";
+  ok: boolean;
+}
+
+export interface PressResponse {
+  type: "press";
   ok: boolean;
 }
 

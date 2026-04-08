@@ -19,7 +19,7 @@
 import { Command } from "commander";
 import { sendRequest, checkDaemonStatus, stopDaemon, restartDaemon } from "./client";
 import { Response, ErrorResponse, ScreenResponse } from "./protocol";
-import { KEY_MAP } from "./session";
+import { SUPPORTED_KEYS } from "./session";
 
 const program = new Command();
 
@@ -106,9 +106,9 @@ program
   )
   .action(async (inputParts: string[]) => {
     const input = inputParts.join(" ");
-    const res = await sendRequest({ type: "send", input });
+    const res = await sendRequest({ type: "type", input });
     handleResponse(res, (r) => {
-      if (r.type === "send") {
+      if (r.type === "type") {
         console.log(JSON.stringify({ ok: r.ok }));
       }
     });
@@ -123,9 +123,9 @@ program
     "  Run `tui-use keys` for the full key list"
   )
   .action(async (key: string) => {
-    const res = await sendRequest({ type: "send", input: key });
+    const res = await sendRequest({ type: "press", key });
     handleResponse(res, (r) => {
-      if (r.type === "send") {
+      if (r.type === "press") {
         console.log(JSON.stringify({ ok: r.ok }));
       }
     });
@@ -162,7 +162,7 @@ program
   .command("keys")
   .description("List all supported special key names for use with `press`")
   .action(() => {
-    console.log(JSON.stringify(Object.keys(KEY_MAP), null, 2));
+    console.log(JSON.stringify(SUPPORTED_KEYS, null, 2));
   });
 
 // ---- paste ----

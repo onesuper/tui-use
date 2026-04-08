@@ -36,10 +36,14 @@ export function hasChanged(
 }
 
 // Special key name → escape sequence mapping
-export const KEY_MAP: Record<string, string> = {
+const KEY_MAP: Record<string, string> = {
   "ctrl+a": "\x01", "ctrl+b": "\x02", "ctrl+c": "\x03", "ctrl+d": "\x04",
-  "ctrl+e": "\x05", "ctrl+f": "\x06", "ctrl+k": "\x0b", "ctrl+l": "\x0c",
-  "ctrl+u": "\x15", "ctrl+w": "\x17", "ctrl+z": "\x1a",
+  "ctrl+e": "\x05", "ctrl+f": "\x06", "ctrl+g": "\x07", "ctrl+h": "\x08",
+  "ctrl+i": "\x09", "ctrl+j": "\x0a", "ctrl+k": "\x0b", "ctrl+l": "\x0c",
+  "ctrl+m": "\x0d", "ctrl+n": "\x0e", "ctrl+o": "\x0f", "ctrl+p": "\x10",
+  "ctrl+q": "\x11", "ctrl+r": "\x12", "ctrl+s": "\x13", "ctrl+t": "\x14",
+  "ctrl+u": "\x15", "ctrl+v": "\x16", "ctrl+w": "\x17", "ctrl+x": "\x18",
+  "ctrl+y": "\x19", "ctrl+z": "\x1a",
   "arrow_up": "\x1b[A", "arrow_down": "\x1b[B",
   "arrow_right": "\x1b[C", "arrow_left": "\x1b[D",
   "page_up": "\x1b[5~", "page_down": "\x1b[6~",
@@ -50,6 +54,9 @@ export const KEY_MAP: Record<string, string> = {
   "f5": "\x1b[15~", "f6": "\x1b[17~", "f7": "\x1b[18~", "f8": "\x1b[19~",
   "f9": "\x1b[20~", "f10": "\x1b[21~",
 };
+
+/** List of all supported key names for use with `press`. */
+export const SUPPORTED_KEYS: string[] = Object.keys(KEY_MAP);
 
 export class Session {
   readonly id: string;
@@ -133,21 +140,31 @@ export class Session {
     return this.terminal.rows;
   }
 
-  /** Send input to the PTY. Supports special key names and \n \r \t escapes. */
+  /** Send literal text to the PTY. Supports \n \r \t escape sequences. */
   send(input: string): void {
     if (this._status === "exited") {
       throw new Error(`Session ${this.id} has already exited`);
-    }
-    const mapped = KEY_MAP[input.toLowerCase()];
-    if (mapped !== undefined) {
-      this.ptyProcess.write(mapped);
-      return;
     }
     const interpreted = input
       .replace(/\\n/g, "\n")
       .replace(/\\r/g, "\r")
       .replace(/\\t/g, "\t");
     this.ptyProcess.write(interpreted);
+  }
+
+  /** Press a named key. Throws a descriptive error if the key name is unknown. */
+  press(key: string): void {
+    if (this._status === "exited") {
+      throw new Error(`Session ${this.id} has already exited`);
+    }
+    const mapped = KEY_MAP[key.toLowerCase()];
+    if (mapped === undefined) {
+      const supported = Object.keys(KEY_MAP).join(", ");
+      throw new Error(
+        `Unknown key: "${key}". Run \`tui-use keys\` to see all supported key names.\nSupported keys: ${supported}`
+      );
+    }
+    this.ptyProcess.write(mapped);
   }
 
   /**

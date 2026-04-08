@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, afterEach } from "vitest";
-import { extractTitle, extractIsFullscreen, hasChanged, Session } from "../src/session";
+import { extractTitle, extractIsFullscreen, hasChanged, Session, SUPPORTED_KEYS } from "../src/session";
 import * as fs from "fs";
 import * as path from "path";
 import * as os from "os";
@@ -136,5 +136,58 @@ describe("Session", () => {
       expect(session.scroll(1000)).toBe(true);
       expect(session.scroll(-1000)).toBe(true);
     });
+  });
+});
+
+describe("SUPPORTED_KEYS", () => {
+  it("includes all 26 ctrl+letter combinations", () => {
+    for (const letter of "abcdefghijklmnopqrstuvwxyz") {
+      expect(SUPPORTED_KEYS).toContain(`ctrl+${letter}`);
+    }
+  });
+
+  it("includes ctrl+r specifically", () => {
+    expect(SUPPORTED_KEYS).toContain("ctrl+r");
+  });
+
+  it("includes common navigation keys", () => {
+    for (const key of ["enter", "escape", "tab", "backspace", "arrow_up", "arrow_down", "arrow_left", "arrow_right"]) {
+      expect(SUPPORTED_KEYS).toContain(key);
+    }
+  });
+});
+
+describe("Session.press", () => {
+  let session: Session;
+  let tempDir: string;
+
+  beforeEach(() => {
+    tempDir = fs.mkdtempSync(path.join(os.tmpdir(), "tui-use-press-test-"));
+    session = new Session("press-test", "cat", { cwd: tempDir, cols: 80, rows: 24 });
+  });
+
+  afterEach(() => {
+    try { session.kill(); } catch (e) { /* already exited */ }
+    try { fs.rmSync(tempDir, { recursive: true, force: true }); } catch (e) { /* ignore */ }
+  });
+
+  it("throws a descriptive error for unknown key names", () => {
+    expect(() => session.press("ctrl+r_typo")).toThrowError(/Unknown key/);
+    expect(() => session.press("ctrl+r_typo")).toThrowError(/tui-use keys/);
+  });
+
+  it("throws for completely unknown keys", () => {
+    expect(() => session.press("superkey")).toThrowError(/Unknown key: "superkey"/);
+  });
+
+  it("does not throw for all supported keys", () => {
+    for (const key of SUPPORTED_KEYS) {
+      expect(() => session.press(key)).not.toThrow();
+    }
+  });
+
+  it("is case-insensitive for key names", () => {
+    expect(() => session.press("ENTER")).not.toThrow();
+    expect(() => session.press("Ctrl+C")).not.toThrow();
   });
 });

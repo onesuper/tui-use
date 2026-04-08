@@ -18,7 +18,8 @@ import {
   StartRequest,
   SnapshotRequest,
   WaitRequest,
-  SendRequest,
+  TypeRequest,
+  PressRequest,
   KillRequest,
   UseRequest,
 } from "./protocol";
@@ -152,8 +153,8 @@ async function handleRequest(req: Request): Promise<Response> {
       };
     }
 
-    case "send": {
-      const r = req as SendRequest;
+    case "type": {
+      const r = req as TypeRequest;
       if (!currentSession) {
         return { type: "error", message: "No current session. Run 'tui-use use <session_id>' first." };
       }
@@ -163,7 +164,27 @@ async function handleRequest(req: Request): Promise<Response> {
       }
       try {
         session.send(r.input);
-        return { type: "send", ok: true };
+        return { type: "type", ok: true };
+      } catch (e: unknown) {
+        return {
+          type: "error",
+          message: e instanceof Error ? e.message : String(e),
+        };
+      }
+    }
+
+    case "press": {
+      const r = req as PressRequest;
+      if (!currentSession) {
+        return { type: "error", message: "No current session. Run 'tui-use use <session_id>' first." };
+      }
+      const session = sessions.get(currentSession);
+      if (!session) {
+        return { type: "error", message: `Session not found: ${currentSession}` };
+      }
+      try {
+        session.press(r.key);
+        return { type: "press", ok: true };
       } catch (e: unknown) {
         return {
           type: "error",
@@ -205,7 +226,7 @@ async function handleRequest(req: Request): Promise<Response> {
       const lines = r.text.split("\n");
       for (const line of lines) {
         session.send(line);
-        session.send("enter");
+        session.press("enter");
       }
       return { type: "paste", ok: true };
     }
