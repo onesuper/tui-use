@@ -109,11 +109,12 @@ function main() {
     }
   }
 
-  console.error('[tui-use] Failed to setup node-pty');
+  // Build succeeded but test still failed - this shouldn't happen often
+  console.error('[tui-use] Warning: node-pty may not work correctly');
   console.error('[tui-use] You may need to install build tools:');
   console.error('  macOS: xcode-select --install');
   console.error('  Linux: sudo apt-get install build-essential python3 g++');
-  process.exit(1);
+  // Don't exit with error - let npm install complete
 }
 
 main();
