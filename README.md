@@ -111,59 +111,56 @@ Agents get the a "polaroid" snapshot of the terminal — not a raw byte stream y
 ### Core Commands
 
 ```bash
-tui-use start <cmd>      # Start program in PTY, returns `session_id` and sets it as **current session**.
-tui-use use <session_id> # Set current session
-tui-use type <text>      # Type text (\n for Enter)
-tui-use press <key>      # Press key: ctrl+c, arrow_up, enter, etc.
-tui-use snapshot         # Return current screen snapshot immediately
-tui-use wait [ms]        # Wait for screen to change or timeout (default: 3000ms)
-tui-use kill             # Kill current session
-tui-use list             # List sessions
+tui-use start <cmd>              # Start program in PTY (options: --cwd, --label, --cols, --rows)
+tui-use use <session_id>         # Set current session for subsequent commands
+tui-use snapshot                 # Get current screen (options: --format pretty|json)
+tui-use wait [ms]                # Wait for screen change (options: --text, --format; default: 3000ms)
+tui-use type <text>              # Type text (use \n for Enter, \t for Tab)
+tui-use press <key>              # Press key: ctrl+c, enter, arrow_up, etc. (see `tui-use keys`)
+tui-use list                     # List sessions (options: --format pretty|json)
+tui-use kill                     # Kill current session
 ```
 
-### Start a Program
+### Command Options
 
+**start** — Start a program in a PTY session
 ```bash
-tui-use start python3 myapp.py
-tui-use start -- python3 -c 'name=input("Name: "); print("Hi", name)'
-tui-use start htop
-tui-use start --cwd ./my-project npm install   # specify working directory
-tui-use start --label "dev-server" npm run dev # label session for easier identification
-tui-use start --cols 120 --rows 40 vim         # custom terminal size (default 80x24)
+tui-use start <cmd> [args...]    # Command to run
+            [--cwd <dir>]        # Working directory (default: current dir)
+            [--label <name>]     # Human-readable label (default: command)
+            [--cols <n>]         # Terminal width (default: 120)
+            [--rows <n>]         # Terminal height (default: 30)
 ```
 
-
-### Observe Terminal State
-
+**snapshot** — Get current screen content immediately
 ```bash
-tui-use snapshot                # current screen (pretty format)
-tui-use snapshot --format json  # full JSON with metadata
-tui-use wait                    # wait for screen to change (default 3000ms)
-tui-use wait 5000               # wait up to 5000ms
-tui-use wait --text ">>>"       # wait until screen contains pattern (regex supported)
+tui-use snapshot [--format <fmt>]  # Output format: pretty (default) | json
+```
+
+**wait** — Wait for screen to change or timeout
+```bash
+tui-use wait [ms]                # Timeout in milliseconds (default: 3000)
+           [--text <pattern>]    # Wait until screen contains text/regex
+           [--format <fmt>]      # Output format: pretty (default) | json
+```
+
+**list** — List all sessions
+```bash
+tui-use list [--format <fmt>]    # Output format: pretty (default) | json
 ```
 
 ### Daemon Management
 
-The **daemon** runs in the background (`~/.tui-use/daemon.sock`), owns all PTY sessions, and auto-exits after 5 minutes of inactivity.
+```bash
+tui-use daemon status            # Check if daemon is running
+tui-use daemon stop              # Stop the daemon
+tui-use daemon restart           # Restart the daemon
+```
+
+### Utility Commands
 
 ```bash
-tui-use daemon status    # Check if daemon is running
-tui-use daemon stop      # Stop the daemon
-tui-use daemon restart   # Restart the daemon
-```
-
-### List Sessions
-
-```bash
-tui-use list                    # table view (pretty format)
-tui-use list --format json      # JSON output for scripting
-```
-
-### Other Commands
-
-```
-tui-use keys             # List all supported key names
+tui-use keys                     # List all supported key names for `press`
 ```
 
 ## Limitations
