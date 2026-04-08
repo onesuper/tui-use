@@ -108,75 +108,44 @@ Agents get the a "polaroid" snapshot of the terminal — not a raw byte stream y
 
 ## CLI Interface
 
-### Commands
+### Core Commands
 
-**start** — Start a program in a PTY session
 ```bash
-tui-use start python3                          # Start Python REPL
-tui-use start -- python3 -c 'print(1+1)'       # Start with flags (use -- before flags)
-tui-use start --cwd ./my-project npm install   # Run in specific directory
-tui-use start --label "dev-server" npm run dev # Label session for identification
-tui-use start --cols 80 --rows 24 vim          # Custom terminal size (default: 120x30)
+tui-use start <cmd> [args...]                  # Start a program
+tui-use start -- <cmd> [args...]               # Start with flags (use -- before -flags)
+tui-use start --cwd <dir> <cmd>                # Run in specific directory
+tui-use start --label <name> <cmd>             # Label session for identification
+tui-use start --cols <n> --rows <n> <cmd>      # Custom terminal size (default: 120x30)
+
+tui-use use <session_id>                       # Switch to a session
+
+tui-use snapshot                               # Get screen (pretty format)
+tui-use snapshot --format json                 # Get screen (JSON format)
+
+tui-use wait                                   # Wait for change (default: 3000ms)
+tui-use wait <ms>                              # Wait with custom timeout
+tui-use wait --text <pattern>                  # Wait until screen contains text/regex
+tui-use wait <ms> --text <pattern> --format json
+
+tui-use type <text>                            # Type text
+tui-use type "<text>\n"                        # Type with Enter (\n)
+tui-use type "<text>\t"                        # Type with Tab (\t)
+
+tui-use press <key>                            # Press a key: enter, ctrl+c, arrow_up, etc.
+tui-use keys                                   # List all supported keys
+
+tui-use list                                   # List sessions (pretty format)
+tui-use list --format json                     # List sessions (JSON format)
+
+tui-use kill                                   # Kill current session
 ```
 
-**use** — Switch to a session for subsequent commands
-```bash
-tui-use use happy-okapi                        # Set current session
-```
+### Daemon Commands
 
-**snapshot** — Get current screen content immediately
-```bash
-tui-use snapshot                               # Pretty format (human readable)
-tui-use snapshot --format json                 # JSON format for scripting
-```
-
-**wait** — Wait for screen to change or timeout
-```bash
-tui-use wait                                   # Wait for change (default 3000ms)
-tui-use wait 5000                              # Wait up to 5000ms
-tui-use wait --text ">>>"                      # Wait until screen contains text/regex
-tui-use wait --text "ready" --format json      # Combine options
-```
-
-**type** — Type text into the current session
-```bash
-tui-use type "hello world"                     # Type text
-tui-use type "hello\n"                         # Type with Enter (\n)
-tui-use type "name\t"                          # Type with Tab (\t)
-```
-
-**press** — Press a special key
-```bash
-tui-use press enter                            # Press Enter
-tui-use press ctrl+c                           # Send interrupt signal
-tui-use press arrow_down                       # Press arrow key
-tui-use press q                                # Press single key
-```
-
-Keys: `ctrl+c`, `ctrl+d`, `enter`, `escape`, `tab`, `arrow_up/down/left/right`, `f1`-`f10`, etc.
-Run `tui-use keys` for the full list.
-
-**list** — List all sessions
-```bash
-tui-use list                                   # Table view (pretty format)
-tui-use list --format json                     # JSON output
-```
-
-**kill** — Kill the current session
-```bash
-tui-use kill                                   # Terminate current session
-```
-
-**daemon** — Manage the background daemon
 ```bash
 tui-use daemon status                          # Check if daemon is running
 tui-use daemon stop                            # Stop the daemon
 tui-use daemon restart                         # Restart the daemon
-```
-
-**keys** — List all supported key names
-```bash
-tui-use keys                                   # Show all keys for `press` command
 ```
 
 ## Limitations
