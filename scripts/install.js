@@ -26,12 +26,16 @@ function findNodePtyPath() {
 function testNodePty() {
   try {
     // Test in a subprocess so native addon can be freshly loaded after install.
-    // Use __dirname to resolve node-pty relative to this script, not the caller's cwd.
-    const nodePtyPath = JSON.stringify(path.join(__dirname, '..', 'node_modules', 'node-pty'));
-    execSync(
-      `node -e "const pty=require(${nodePtyPath});const p=pty.spawn('/bin/sh',['-c','exit'],{name:'xterm'});p.kill();"`,
-      { stdio: 'ignore' }
-    );
+    // Write a temp file to avoid shell quoting issues with paths containing special chars.
+    const nodePtyPath = path.join(__dirname, '..', 'node_modules', 'node-pty');
+    const tmpScript = path.join(require('os').tmpdir(), 'tui-use-test-pty.js');
+    fs.writeFileSync(tmpScript, `
+      const pty = require(${JSON.stringify(nodePtyPath)});
+      const p = pty.spawn('/bin/sh', ['-c', 'exit'], { name: 'xterm' });
+      p.kill();
+    `);
+    execSync(`node ${tmpScript}`, { stdio: 'ignore' });
+    try { fs.unlinkSync(tmpScript); } catch {}
     return true;
   } catch (e) {
     return false;
