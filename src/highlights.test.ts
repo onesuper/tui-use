@@ -121,4 +121,39 @@ describe("extractHighlights", () => {
 
     expect(extractHighlights(buf, 1)).toEqual([]);
   });
+
+  it("respects startY offset for scrolled viewports", () => {
+    // Simulate a buffer with scrollback: viewport starts at line 5
+    // Each row shows its line number for verification
+    const row5 = "  Line 5  ".split("").map((ch) => ({ ch, inverse: true as true }));
+    const row6 = "  Line 6  ".split("");
+    const row7 = "  Line 7  ".split("").map((ch) => ({ ch, inverse: true as true }));
+
+    const buf = makeBuffer([
+      ["skip"], // row 0 (in scrollback, not visible)
+      ["skip"], // row 1
+      ["skip"], // row 2
+      ["skip"], // row 3
+      ["skip"], // row 4
+      row5,     // row 5 - viewport start
+      row6,     // row 6
+      row7,     // row 7
+    ]);
+
+    // When viewport is at startY=5, scanning 3 rows should find:
+    // - Line 5 at result line 0
+    // - Line 7 at result line 2
+    const result = extractHighlights(buf, 3, 5);
+    expect(result).toHaveLength(2);
+    expect(result[0]).toMatchObject({ line: 0, text: "Line 5" });
+    expect(result[1]).toMatchObject({ line: 2, text: "Line 7" });
+  });
+
+  it("returns empty array when startY is beyond buffer length", () => {
+    const row0 = "  Option A  ".split("").map((ch) => ({ ch, inverse: true as true }));
+    const buf = makeBuffer([row0]);
+
+    // startY=100 is beyond the buffer
+    expect(extractHighlights(buf, 3, 100)).toEqual([]);
+  });
 });

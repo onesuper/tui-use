@@ -123,4 +123,18 @@ describe("Session", () => {
       expect(typeof info.start_time).toBe("number");
     });
   });
+
+  describe("scroll", () => {
+    it("returns true for successful scroll", () => {
+      // scroll should succeed even with minimal content
+      expect(session.scroll(10)).toBe(true);
+      expect(session.scroll(-10)).toBe(true);
+    });
+
+    it("returns true when scrolling at buffer boundaries", () => {
+      // Scrolling beyond buffer bounds should not throw
+      expect(session.scroll(1000)).toBe(true);
+      expect(session.scroll(-1000)).toBe(true);
+    });
+  });
 });
