@@ -5,6 +5,7 @@
   "bin": "./dist/cli.js",
   "files": [
     "dist/",
+    "scripts/",
     "README.md",
     "LICENSE"
   ],
@@ -12,6 +13,7 @@
     "build": "tsc && chmod +x dist/cli.js",
     "clean": "rm -rf node_modules package-lock.json dist ~/.tui-use",
     "dev": "tsc --watch",
+    "postinstall": "node scripts/install.js",
     "prepublishOnly": "npm run build",
     "publish:patch": "npm version patch && npm publish",
     "publish:minor": "npm version minor && npm publish",
