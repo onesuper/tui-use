@@ -7,12 +7,20 @@
 import * as net from "net";
 import * as fs from "fs";
 import * as path from "path";
+import * as os from "os";
 import * as child_process from "child_process";
-import { SOCKET_PATH, PID_PATH } from "./daemon";
+import { SOCKET_PATH, PID_PATH, DAEMON_PORT } from "./daemon";
 import { Request, Response } from "./protocol";
 
 const DAEMON_START_TIMEOUT_MS = 3000;
 const DAEMON_POLL_INTERVAL_MS = 100;
+
+function createConnection(): net.Socket {
+  if (process.platform === "win32") {
+    return net.createConnection(DAEMON_PORT);
+  }
+  return net.createConnection(SOCKET_PATH);
+}
 
 function info(msg: string): void {
   process.stderr.write(`tui-use: ${msg}\n`);
@@ -28,7 +36,7 @@ export async function sendRequest(req: Request): Promise<Response> {
 }
 
 function isDaemonRunning(): boolean {
-  if (!fs.existsSync(SOCKET_PATH)) return false;
+  if (process.platform !== "win32" && !fs.existsSync(SOCKET_PATH)) return false;
   if (!fs.existsSync(PID_PATH)) return false;
   try {
     const pid = parseInt(fs.readFileSync(PID_PATH, "utf-8").trim(), 10);
@@ -68,7 +76,7 @@ async function startDaemon(): Promise<void> {
 
 function canConnect(): Promise<boolean> {
   return new Promise((resolve) => {
-    const socket = net.createConnection(SOCKET_PATH);
+    const socket = createConnection();
     socket.on("connect", () => { socket.destroy(); resolve(true); });
     socket.on("error", () => resolve(false));
   });
@@ -76,7 +84,7 @@ function canConnect(): Promise<boolean> {
 
 function sendToDaemon(req: Request): Promise<Response> {
   return new Promise((resolve, reject) => {
-    const socket = net.createConnection(SOCKET_PATH);
+    const socket = createConnection();
     let buffer = "";
     let responded = false;
 
@@ -121,7 +129,7 @@ function sleep(ms: number): Promise<void> {
 
 /** Check if daemon is running without starting it */
 export function checkDaemonStatus(): { running: boolean; pid?: number } {
-  if (!fs.existsSync(SOCKET_PATH) || !fs.existsSync(PID_PATH)) {
+  if ((process.platform !== "win32" && !fs.existsSync(SOCKET_PATH)) || !fs.existsSync(PID_PATH)) {
     return { running: false };
   }
   try {
@@ -142,7 +150,9 @@ export function stopDaemon(): boolean {
   try {
     process.kill(status.pid!, "SIGTERM");
     // Clean up files
-    try { fs.unlinkSync(SOCKET_PATH); } catch {}
+    if (process.platform !== "win32") {
+      try { fs.unlinkSync(SOCKET_PATH); } catch {}
+    }
     try { fs.unlinkSync(PID_PATH); } catch {}
     return true;
   } catch {

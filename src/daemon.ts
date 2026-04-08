@@ -27,8 +27,18 @@ import {
 const TERMLINK_DIR = path.join(os.homedir(), ".tui-use");
 export const SOCKET_PATH = path.join(TERMLINK_DIR, "daemon.sock");
 export const PID_PATH = path.join(TERMLINK_DIR, "daemon.pid");
+export const DAEMON_PORT = 7654;
 
 const IDLE_TIMEOUT_MS = 5 * 60 * 1000; // 5 minutes
+
+// Platform-aware server listening configuration
+function startServerListener(server: net.Server, callback: () => void): void {
+  if (process.platform === "win32") {
+    server.listen(DAEMON_PORT, callback);
+  } else {
+    server.listen(SOCKET_PATH, callback);
+  }
+}
 
 // ---- Session registry ----
 
@@ -302,8 +312,8 @@ async function handleRequest(req: Request): Promise<Response> {
 function startServer() {
   fs.mkdirSync(TERMLINK_DIR, { recursive: true });
 
-  // Clean up stale socket
-  if (fs.existsSync(SOCKET_PATH)) {
+  // Clean up stale socket (Unix only)
+  if (process.platform !== "win32" && fs.existsSync(SOCKET_PATH)) {
     fs.unlinkSync(SOCKET_PATH);
   }
 
@@ -341,10 +351,11 @@ function startServer() {
     });
   });
 
-  server.listen(SOCKET_PATH, () => {
+  startServerListener(server, () => {
     // Write PID file
     fs.writeFileSync(PID_PATH, String(process.pid));
-    process.stderr.write(`tui-use daemon started (pid=${process.pid})\n`);
+    const listenTarget = process.platform === "win32" ? `port ${DAEMON_PORT}` : SOCKET_PATH;
+    process.stderr.write(`tui-use daemon started (pid=${process.pid}, listening on ${listenTarget})\n`);
   });
 
   server.on("error", (err) => {
@@ -355,7 +366,7 @@ function startServer() {
   // Cleanup on exit
   process.on("exit", () => {
     try {
-      fs.unlinkSync(SOCKET_PATH);
+      if (process.platform !== "win32") fs.unlinkSync(SOCKET_PATH);
       fs.unlinkSync(PID_PATH);
     } catch {
       /* ignore */
