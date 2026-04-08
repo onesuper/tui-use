@@ -91,8 +91,11 @@ function main() {
 
   // Try to install prebuilt binary
   if (installPrebuild(nodePtyDir)) {
-    // Test again after installing prebuild
-    delete require.cache[require.resolve('node-pty')];
+    // Clear cache if previously loaded
+    try {
+      const key = require.resolve('node-pty');
+      if (require.cache[key]) delete require.cache[key];
+    } catch {}
     if (testNodePty()) {
       console.log('[tui-use] Prebuilt binary works');
       return;
@@ -102,7 +105,11 @@ function main() {
 
   // Fall back to building from source
   if (rebuildFromSource(nodePtyDir)) {
-    delete require.cache[require.resolve('node-pty')];
+    // Clear cache after rebuild
+    try {
+      const key = require.resolve('node-pty');
+      if (require.cache[key]) delete require.cache[key];
+    } catch {}
     if (testNodePty()) {
       console.log('[tui-use] node-pty is ready');
       return;
