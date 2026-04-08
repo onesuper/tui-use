@@ -1,103 +1,33 @@
 #!/usr/bin/env node
 /**
- * Post-install script to install prebuilt node-pty binaries
- * Handles both npm install and npx environments
+ * Post-install script to verify node-pty compatibility
+ * Prints warning if binary is incompatible (does not block install)
  */
 
-const fs = require('fs');
-const path = require('path');
-const { execSync } = require('child_process');
-
-const platform = process.platform;
-const arch = process.arch;
-const platformKey = `${platform}-${arch}`;
-
-// Find prebuilds directory (in tui-use package)
-const prebuildsDir = path.join(__dirname, '..', 'dist', 'prebuilds');
-
-// Find node-pty build directory (may be nested or flat)
-function findNodePtyPath() {
-  const candidates = [
-    // npm install: node-pty inside tui-use/node_modules
-    path.join(__dirname, '..', 'node_modules', 'node-pty', 'build', 'Release'),
-    // npx/yarn: node-pty at same level as tui-use
-    path.join(__dirname, '..', '..', 'node-pty', 'build', 'Release'),
-  ];
-
-  // Return the first existing parent directory, or default
-  for (const dir of candidates) {
-    const parent = path.dirname(dir);
-    if (fs.existsSync(parent)) {
-      return dir;
-    }
-  }
-  return candidates[0];
-}
-
-const nodePtyBuildDir = findNodePtyPath();
-
-function findPrebuild() {
-  if (!fs.existsSync(prebuildsDir)) {
-    return null;
-  }
-
-  const prebuildPath = path.join(prebuildsDir, platformKey);
-  if (!fs.existsSync(prebuildPath)) {
-    return null;
-  }
-
-  const files = fs.readdirSync(prebuildPath).filter(f => f.endsWith('.node'));
-  if (files.length === 0) {
-    return null;
-  }
-
-  return path.join(prebuildPath, files[0]);
-}
-
-function installPrebuild(prebuildPath) {
+function testNodePty() {
   try {
-    if (!fs.existsSync(nodePtyBuildDir)) {
-      fs.mkdirSync(nodePtyBuildDir, { recursive: true });
-    }
-
-    const targetPath = path.join(nodePtyBuildDir, 'pty.node');
-    fs.copyFileSync(prebuildPath, targetPath);
-    console.log(`[tui-use] Installed prebuilt binary for ${platformKey}`);
+    const pty = require('node-pty');
+    const proc = pty.spawn('echo', ['test'], { name: 'xterm-color' });
+    proc.kill();
     return true;
-  } catch (err) {
-    console.error(`[tui-use] Failed to install prebuild: ${err.message}`);
+  } catch (e) {
     return false;
   }
 }
 
 function main() {
-  // Check if already installed
-  if (fs.existsSync(nodePtyBuildDir)) {
-    const files = fs.readdirSync(nodePtyBuildDir).filter(f => f.endsWith('.node'));
-    if (files.length > 0) {
-      console.log(`[tui-use] node-pty already built`);
-      return;
-    }
-  }
-
-  // Try prebuild
-  const prebuildPath = findPrebuild();
-  if (prebuildPath && installPrebuild(prebuildPath)) {
+  if (testNodePty()) {
+    console.log('[tui-use] node-pty is ready');
     return;
   }
 
-  // Build from source
-  console.log(`[tui-use] Building from source...`);
-  try {
-    execSync('npm rebuild node-pty', {
-      stdio: 'inherit',
-      cwd: path.join(__dirname, '..')
-    });
-    console.log(`[tui-use] Built from source successfully`);
-  } catch (err) {
-    console.error(`[tui-use] Build failed: ${err.message}`);
-    process.exit(1);
-  }
+  console.warn('[tui-use] WARNING: node-pty binary is incompatible with your Node.js version');
+  console.warn('[tui-use] Please run: npm rebuild node-pty');
+  console.warn('[tui-use] Or install build tools and reinstall tui-use:');
+  console.warn('  macOS: xcode-select --install');
+  console.warn('  Linux: sudo apt-get install build-essential python3 g++');
+  console.warn('  Windows: npm install --global windows-build-tools');
+  // Don't exit with error - let installation complete
 }
 
 main();
