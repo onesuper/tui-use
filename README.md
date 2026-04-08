@@ -127,6 +127,8 @@ tui-use type <text>                            # Type text
 tui-use type "<text>\n"                        # Type with Enter (\n)
 tui-use type "<text>\t"                        # Type with Tab (\t)
 tui-use press <key>                            # Press a key: enter, ctrl+c, arrow_up, etc.
+tui-use scrollup <n>                           # Scroll up to view older content
+tui-use scrolldown <n>                         # Scroll down to view newer content
 tui-use list                                   # List sessions (pretty format)
 tui-use kill                                   # Kill current session
 ```

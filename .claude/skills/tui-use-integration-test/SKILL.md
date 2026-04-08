@@ -24,57 +24,24 @@ Run integration tests to verify tui-use functionality.
 | `scroll` | Terminal buffer scrolling |
 | `highlights` | Inverse-video highlights detection |
 
-## Running Tests
 
-**Run all tests:**
-```
-/tui-use-integration-test
-```
-
-**Run specific suite:**
-```
-/tui-use-integration-test session
-/tui-use-integration-test interaction
-/tui-use-integration-test find
-/tui-use-integration-test scroll
-/tui-use-integration-test highlights
-```
-
-## Test Files
-
-Test specifications are in `tests/` directory:
-- `tests/session.md` — Session management tests
-- `tests/interaction.md` — Interaction tests
-- `tests/find.md` — Find functionality tests
-- `tests/scroll.md` — Scroll functionality tests
-- `tests/highlights.md` — Highlights detection tests
+Test specifications are in `tests/` directory
 
 ## Reporting
 
 After running tests, report results as:
 
 ```
-session:     Scenario 1 — PASS / FAIL
-             Scenario 2 — PASS / FAIL
+<suite>:
+  <scenario 1>      — PARTIAL
+    - Initial screen capture: PASS
+    - scroll command executes: PASS
+    - Less pager scrolling with 'space': FAIL
 
-interaction: Scenario 1 — PASS / FAIL
-             Scenario 2 — PASS / FAIL
-             Scenario 3 — PASS / FAIL
-             Scenario 4 — PASS / FAIL
-             Scenario 5 — PASS / FAIL
+  <scenario 2>     — PASS
+    - Find A words: PASS
+    - Find B words: FAIL (<Fail reason or notes>)
 
-find:        Scenario 1 — PASS / FAIL
-             Scenario 2 — PASS / FAIL
-             Scenario 3 — PASS / FAIL
-             Scenario 4 — PASS / FAIL
-
-scroll:      Scenario 1 — PASS / FAIL
-             Scenario 2 — PASS / FAIL
-             Scenario 3 — PASS / FAIL
-
-highlights:  Scenario 1 — PASS / FAIL
-             Scenario 2 — PASS / FAIL
-             Scenario 3 — PASS / FAIL
 ```
 
 If any test fails, include the actual `screen` and `highlights` values and what was expected.

@@ -165,6 +165,114 @@ program
     console.log(JSON.stringify(Object.keys(KEY_MAP), null, 2));
   });
 
+// ---- paste ----
+program
+  .command("paste <text...>")
+  .description(
+    "Paste multi-line text to the current session. Each line is sent followed by Enter."
+  )
+  .action(async (textParts: string[]) => {
+    const text = textParts.join(" ");
+    const res = await sendRequest({ type: "paste", text });
+    handleResponse(res, (r) => {
+      if (r.type === "paste") {
+        console.log(JSON.stringify({ ok: r.ok }));
+      }
+    });
+  });
+
+// ---- find ----
+program
+  .command("find <pattern>")
+  .description("Search for text pattern in the current screen (regex supported)")
+  .action(async (pattern: string) => {
+    const res = await sendRequest({ type: "find", pattern });
+    handleResponse(res, (r) => {
+      if (r.type === "find") {
+        // Pretty output
+        if (r.matches.length === 0) {
+          console.log("No matches found");
+        } else {
+          console.log(`Found ${r.matches.length} match(es):`);
+          for (const m of r.matches) {
+            console.log(`  L${m.line},C${m.col_start}-${m.col_end}: "${m.text}"`);
+          }
+        }
+      }
+    });
+  });
+
+// ---- scrollup ----
+program
+  .command("scrollup <lines>")
+  .description("Scroll up to view older content (move viewport up). Note: Limited by scrollback buffer.")
+  .action(async (lines: string) => {
+    const numLines = parseInt(lines, 10);
+    if (isNaN(numLines) || numLines < 0) {
+      process.stderr.write("Error: lines must be a positive number\n");
+      process.exit(1);
+    }
+    const res = await sendRequest({ type: "scroll", lines: -numLines });
+    handleResponse(res, (r) => {
+      if (r.type === "scroll") {
+        console.log(JSON.stringify({ ok: r.ok, direction: "up", lines: numLines }));
+      }
+    });
+  });
+
+// ---- scrolldown ----
+program
+  .command("scrolldown <lines>")
+  .description("Scroll down to view newer content (move viewport down). Note: Limited by scrollback buffer.")
+  .action(async (lines: string) => {
+    const numLines = parseInt(lines, 10);
+    if (isNaN(numLines) || numLines < 0) {
+      process.stderr.write("Error: lines must be a positive number\n");
+      process.exit(1);
+    }
+    const res = await sendRequest({ type: "scroll", lines: numLines });
+    handleResponse(res, (r) => {
+      if (r.type === "scroll") {
+        console.log(JSON.stringify({ ok: r.ok, direction: "down", lines: numLines }));
+      }
+    });
+  });
+
+// ---- info ----
+program
+  .command("info")
+  .description("Show detailed information about the current session")
+  .action(async () => {
+    const res = await sendRequest({ type: "info" });
+    handleResponse(res, (r) => {
+      if (r.type === "info") {
+        // Pretty format
+        console.log(`Session ID: ${r.session_id}`);
+        console.log(`Label: ${r.label}`);
+        console.log(`Command: ${r.command}`);
+        console.log(`Status: ${r.status}`);
+        if (r.exit_code !== null) {
+          console.log(`Exit Code: ${r.exit_code}`);
+        }
+        console.log(`Size: ${r.cols}x${r.rows}`);
+        console.log(`Started: ${new Date(r.start_time).toISOString()}`);
+      }
+    });
+  });
+
+// ---- rename ----
+program
+  .command("rename <label>")
+  .description("Rename the current session with a new label")
+  .action(async (label: string) => {
+    const res = await sendRequest({ type: "rename", label });
+    handleResponse(res, (r) => {
+      if (r.type === "rename") {
+        console.log(JSON.stringify({ ok: r.ok, label: r.label }));
+      }
+    });
+  });
+
 // ---- list ----
 program
   .command("list")

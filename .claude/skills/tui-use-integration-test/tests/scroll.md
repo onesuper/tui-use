@@ -26,14 +26,14 @@ Note first 5 lines (should show lines 1-5)
 
 **Step 1.2** — Scroll down:
 ```bash
-tui-use scroll 10
+tui-use scrolldown 10
 tui-use snapshot --format json | jq -r '.screen' | head -5
 ```
 Assert: Screen content changed, now shows different lines (lines 11-15 or scrollback content)
 
 **Step 1.3** — Scroll up:
 ```bash
-tui-use scroll -10
+tui-use scrollup 10
 tui-use snapshot --format json | jq -r '.screen' | head -5
 ```
 Assert: Screen shows content closer to initial view
@@ -62,7 +62,7 @@ Assert: May or may not find, depending on visible area
 
 **Step 2.2** — Scroll down and search again:
 ```bash
-tui-use scroll 50
+tui-use scrolldown 50
 tui-use find "^[[:space:]]*[0-9]+[[:space:]]+B"
 ```
 Assert: Now finds matches with B words
@@ -85,13 +85,13 @@ tui-use wait
 
 **Step 3.1** — Scroll up with minimal content:
 ```bash
-tui-use scroll -100
+tui-use scrollup 100
 ```
 Assert: Command succeeds (returns `ok: true`), no error
 
 **Step 3.2** — Scroll down with minimal content:
 ```bash
-tui-use scroll 100
+tui-use scrolldown 100
 ```
 Assert: Command succeeds, no error
 

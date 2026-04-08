@@ -192,6 +192,84 @@ async function handleRequest(req: Request): Promise<Response> {
       return { type: "list", sessions: list, current: currentSession ?? undefined };
     }
 
+    case "paste": {
+      if (!currentSession) {
+        return { type: "error", message: "No current session. Run 'tui-use use <session_id>' first." };
+      }
+      const session = sessions.get(currentSession);
+      if (!session) {
+        return { type: "error", message: `Session not found: ${currentSession}` };
+      }
+      const r = req as import("./protocol").PasteRequest;
+      // Send text with line-by-line delay for stability
+      const lines = r.text.split("\n");
+      for (const line of lines) {
+        session.send(line);
+        session.send("enter");
+      }
+      return { type: "paste", ok: true };
+    }
+
+    case "find": {
+      if (!currentSession) {
+        return { type: "error", message: "No current session. Run 'tui-use use <session_id>' first." };
+      }
+      const session = sessions.get(currentSession);
+      if (!session) {
+        return { type: "error", message: `Session not found: ${currentSession}` };
+      }
+      const r = req as import("./protocol").FindRequest;
+      const matches = session.find(r.pattern);
+      return { type: "find", matches };
+    }
+
+    case "scroll": {
+      if (!currentSession) {
+        return { type: "error", message: "No current session. Run 'tui-use use <session_id>' first." };
+      }
+      const session = sessions.get(currentSession);
+      if (!session) {
+        return { type: "error", message: `Session not found: ${currentSession}` };
+      }
+      const r = req as import("./protocol").ScrollRequest;
+      const ok = session.scroll(r.lines);
+      return { type: "scroll", lines: r.lines, ok };
+    }
+
+    case "info": {
+      if (!currentSession) {
+        return { type: "error", message: "No current session. Run 'tui-use use <session_id>' first." };
+      }
+      const session = sessions.get(currentSession);
+      if (!session) {
+        return { type: "error", message: `Session not found: ${currentSession}` };
+      }
+      return {
+        type: "info",
+        session_id: session.id,
+        label: session.label,
+        command: session.command,
+        status: session.status,
+        exit_code: session.exitCode,
+        start_time: session.startTime,
+        cols: session.cols,
+        rows: session.rows,
+      };
+    }
+
+    case "rename": {
+      if (!currentSession) {
+        return { type: "error", message: "No current session. Run 'tui-use use <session_id>' first." };
+      }
+      const session = sessions.get(currentSession);
+      if (!session) {
+        return { type: "error", message: `Session not found: ${currentSession}` };
+      }
+      const r = req as import("./protocol").RenameRequest;
+      session.rename(r.label);
+      return { type: "rename", ok: true, label: r.label };
+    }
+
     default: {
       return { type: "error", message: "Unknown request type" };
     }

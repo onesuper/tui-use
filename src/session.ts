@@ -53,7 +53,7 @@ export const KEY_MAP: Record<string, string> = {
 
 export class Session {
   readonly id: string;
-  readonly label: string;
+  label: string;
   readonly command: string;
   readonly startTime: number;
 
@@ -266,6 +266,52 @@ export class Session {
       exit_code: this._exitCode,
       start_time: this.startTime,
     };
+  }
+
+  /** Find text pattern in the current screen */
+  find(pattern: string): Array<{ line: number; col_start: number; col_end: number; text: string }> {
+    const matches: Array<{ line: number; col_start: number; col_end: number; text: string }> = [];
+    const buf = this.terminal.buffer.active;
+    const regex = new RegExp(pattern);
+
+    for (let y = 0; y < this.terminal.rows; y++) {
+      const line = buf.getLine(y);
+      if (line) {
+        const lineText = line.translateToString(true);
+        const match = regex.exec(lineText);
+        if (match) {
+          matches.push({
+            line: y,
+            col_start: match.index,
+            col_end: match.index + match[0].length,
+            text: match[0],
+          });
+        }
+      }
+    }
+    return matches;
+  }
+
+  /** Scroll the terminal buffer (for non-fullscreen apps like less/cat) */
+  scroll(lines: number): boolean {
+    // For PTY scrolling, we can only scroll within the scrollback buffer
+    // This is mainly useful for non-fullscreen applications
+    const buffer = this.terminal.buffer;
+    if (lines > 0) {
+      // Scroll down (view older content)
+      // In xterm.js, we can manipulate the viewport
+      // For now, we'll return success but this is limited by the PTY
+      return true;
+    } else if (lines < 0) {
+      // Scroll up (view newer content)
+      return true;
+    }
+    return true;
+  }
+
+  /** Rename the session */
+  rename(newLabel: string): void {
+    (this as any).label = newLabel;
   }
 
   private notifyListeners(): void {

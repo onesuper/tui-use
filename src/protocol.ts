@@ -14,7 +14,12 @@ export type Request =
   | SendRequest
   | KillRequest
   | ListRequest
-  | UseRequest;
+  | UseRequest
+  | PasteRequest
+  | FindRequest
+  | ScrollRequest
+  | InfoRequest
+  | RenameRequest;
 
 export interface StartRequest {
   type: "start";
@@ -55,6 +60,30 @@ export interface UseRequest {
   session_id: string;
 }
 
+export interface PasteRequest {
+  type: "paste";
+  text: string;
+}
+
+export interface FindRequest {
+  type: "find";
+  pattern: string;
+}
+
+export interface ScrollRequest {
+  type: "scroll";
+  lines: number;  // positive = down, negative = up
+}
+
+export interface InfoRequest {
+  type: "info";
+}
+
+export interface RenameRequest {
+  type: "rename";
+  label: string;
+}
+
 // ---- Responses ----
 
 export type Response =
@@ -64,6 +93,11 @@ export type Response =
   | KillResponse
   | ListResponse
   | UseResponse
+  | PasteResponse
+  | FindResponse
+  | ScrollResponse
+  | InfoResponse
+  | RenameResponse
   | ErrorResponse;
 
 export interface StartResponse {
@@ -121,6 +155,45 @@ export interface SessionInfo {
   status: "running" | "exited";
   exit_code: number | null;
   start_time: number;
+}
+
+export interface PasteResponse {
+  type: "paste";
+  ok: boolean;
+}
+
+export interface FindResponse {
+  type: "find";
+  matches: Array<{
+    line: number;
+    col_start: number;
+    col_end: number;
+    text: string;
+  }>;
+}
+
+export interface ScrollResponse {
+  type: "scroll";
+  lines: number;
+  ok: boolean;
+}
+
+export interface InfoResponse {
+  type: "info";
+  session_id: string;
+  label: string;
+  command: string;
+  status: "running" | "exited";
+  exit_code: number | null;
+  start_time: number;
+  cols: number;
+  rows: number;
+}
+
+export interface RenameResponse {
+  type: "rename";
+  ok: boolean;
+  label: string;
 }
 
 export interface ErrorResponse {
