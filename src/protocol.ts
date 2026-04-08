@@ -35,12 +35,14 @@ export type ScreenFormat = "text" | "lines" | "numbered" | "pretty";
 
 export interface SnapshotRequest {
   type: "snapshot";
+  color?: boolean;       // when true, lines contain ANSI escape sequences
 }
 
 export interface WaitRequest {
   type: "wait";
   timeout_ms?: number;   // default 3000
   text?: string;         // substring or regex — block until screen contains text
+  color?: boolean;       // when true, lines contain ANSI escape sequences
 }
 
 /** Send literal text to the PTY. Supports \n \r \t escape sequences. */

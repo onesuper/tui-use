@@ -64,8 +64,9 @@ program
   .command("snapshot")
   .description("Return the current rendered screen snapshot (requires: tui-use use <id> first)")
   .option("--format <fmt>", "Output format: pretty, json (default: pretty)", "pretty")
+  .option("--color", "Preserve ANSI color/style escape sequences in output lines")
   .action(async (opts) => {
-    const res = await sendRequest({ type: "snapshot" });
+    const res = await sendRequest({ type: "snapshot", color: opts.color ?? false });
     handleResponse(res, (r) => printScreen(r as ScreenResponse, opts.format as "pretty" | "json"));
   });
 
@@ -80,6 +81,7 @@ program
   )
   .option("--text <pattern>", "Wait until screen contains text (substring or regex)")
   .option("--format <fmt>", "Output format: pretty, json (default: pretty)", "pretty")
+  .option("--color", "Preserve ANSI color/style escape sequences in output lines")
   .action(async (duration: string | undefined, opts) => {
     // Parse duration (position arg) or use default
     let timeoutMs = 3000;
@@ -93,6 +95,7 @@ program
       type: "wait",
       timeout_ms: timeoutMs,
       text: opts.text,
+      color: opts.color ?? false,
     });
     handleResponse(res, (r) => printScreen(r as ScreenResponse, opts.format as "pretty" | "json"));
   });

@@ -111,7 +111,7 @@ async function handleRequest(req: Request): Promise<Response> {
       if (!session) {
         return { type: "error", message: `Session not found: ${currentSession}` };
       }
-      const { lines, cursor, changed, highlights, title, is_fullscreen } = session.snapshot();
+      const { lines, cursor, changed, highlights, title, is_fullscreen } = session.snapshot({ color: (req as SnapshotRequest).color });
       return {
         type: "snapshot",
         session_id: currentSession,
@@ -136,7 +136,8 @@ async function handleRequest(req: Request): Promise<Response> {
       if (!session) {
         return { type: "error", message: `Session not found: ${currentSession}` };
       }
-      const { lines, cursor, changed, highlights, title, is_fullscreen } = await session.wait((req as WaitRequest).timeout_ms ?? 3000, (req as WaitRequest).text);
+      const waitReq = req as WaitRequest;
+      const { lines, cursor, changed, highlights, title, is_fullscreen } = await session.wait(waitReq.timeout_ms ?? 3000, waitReq.text, { color: waitReq.color });
       return {
         type: "wait",
         session_id: currentSession,
