@@ -25,6 +25,8 @@ tui-use start python3 examples/ask.py
 **Step 1.1** — Wait for first prompt:
 ```bash
 tui-use wait
+# Or with JSON output for programmatic assertions:
+tui-use wait --format json | jq -r '.screen'
 ```
 Assert: `screen` contains `"What is your name?"`
 
@@ -148,14 +150,16 @@ tui-use kill
 tui-use start python3 examples/menu.py
 tui-use wait --text "Option"
 ```
-Assert: `highlights` contains exactly one entry with `text` = `"Option A"`
+Assert: `highlights` contains exactly one entry with `text` = `"Option A"` (and fields `line`, `col_start`, `col_end`)
+
+**Note:** Use `--format json` to inspect highlights: `tui-use wait --format json | jq '.highlights'`
 
 **Step 6.1** — Move selection down:
 ```bash
 tui-use press arrow_down
 tui-use wait
 ```
-Assert: `highlights` contains exactly one entry with `text` = `"Option B"`
+Assert: `highlights` contains exactly one entry with `text` = `"Option B"` (and fields `line`, `col_start`, `col_end`)
 
 ```bash
 tui-use kill
@@ -171,14 +175,14 @@ tui-use kill
 tui-use start python3 examples/tabs.py
 tui-use wait --text "Files"
 ```
-Assert: `highlights` contains one entry with `text` = `"Files"`
+Assert: `highlights` contains one entry with `text` = `"Files"` (and fields `line`, `col_start`, `col_end`)
 
 **Step 7.1** — Move to next tab:
 ```bash
 tui-use press arrow_right
 tui-use wait
 ```
-Assert: `highlights` contains one entry with `text` = `"Git"`, on the same `line` as before
+Assert: `highlights` contains one entry with `text` = `"Git"`, on the same `line` as before (with fields `col_start`, `col_end`)
 
 ```bash
 tui-use kill
@@ -194,14 +198,14 @@ tui-use kill
 tui-use start python3 examples/dialog.py
 tui-use wait --text "Delete"
 ```
-Assert: `highlights` contains one entry with `text` = `"Yes"`
+Assert: `highlights` contains one entry with `text` = `"Yes"` (and fields `line`, `col_start`, `col_end`)
 
 **Step 8.1** — Switch to No:
 ```bash
 tui-use press arrow_right
 tui-use wait
 ```
-Assert: `highlights` contains one entry with `text` = `"No"`, on the same `line` as before
+Assert: `highlights` contains one entry with `text` = `"No"`, on the same `line` as before (with fields `col_start`, `col_end`)
 
 ```bash
 tui-use kill

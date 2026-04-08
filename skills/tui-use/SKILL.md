@@ -26,9 +26,11 @@ tui-use use <id>         # Set current session
 tui-use wait [ms]        # Wait for screen to change (default: 3000ms)
 tui-use type <text>      # Type text (\n for Enter, \t for Tab)
 tui-use press <key>      # Press key (ctrl+c, arrow_up, enter, etc.)
-tui-use snapshot         # Get current screen immediately
+tui-use snapshot         # Get current screen immediately (pretty format)
+tui-use snapshot --format json  # JSON output with full metadata
 tui-use kill             # Kill current session
-tui-use list             # List all sessions
+tui-use list             # List sessions (table view)
+tui-use list --format json      # JSON output for scripting
 ```
 
 #### Start a session
@@ -37,11 +39,12 @@ tui-use list             # List all sessions
 tui-use start python3 myapp.py
 tui-use start -- python3 -c 'name=input("Name: "); print("Hi", name)'
 tui-use start htop
+tui-use start --cwd ./my-project npm install   # specify working directory
+tui-use start --label "dev-server" npm run dev # label session for easier identification
+tui-use start --cols 120 --rows 40 vim         # custom terminal size (default 120x30)
 ```
 
 Returns `session_id` and automatically sets it as **current session**.
-
-Options: `--cwd <dir>`, `--label <name>`, `--cols <n>`, `--rows <n>`
 
 ---
 
@@ -50,20 +53,35 @@ Options: `--cwd <dir>`, `--label <name>`, `--cols <n>`, `--rows <n>`
 `wait` is the primary way to observe the terminal state. It blocks until the screen changes or a timeout occurs.
 
 ```bash
-tui-use wait              # wait for screen to change (default 3000ms)
-tui-use wait 5000         # wait up to 5000ms
-tui-use wait --text ">>>" # wait until screen contains pattern (regex supported)
+tui-use wait                    # wait for screen to change (default 3000ms)
+tui-use wait 5000               # wait up to 5000ms
+tui-use wait --text ">>>"       # wait until screen contains pattern (regex supported)
+tui-use wait --format json      # JSON output with full metadata
 ```
 
-Returns JSON with screen content:
+Default output (pretty format):
+```
+─── session-id ────────────────────────────────────────────
+What is your name?
+> Alice
+─── running | cursor(2,8) | fullscreen:false | title:"" ────
+highlights(0):
+```
+
+JSON output (`--format json`):
 ```json
 {
   "session_id": "abc12345",
-  "screen": "What is your name?\n> ",
+  "screen": "What is your name?\n> Alice",
   "cursor": { "x": 2, "y": 1 },
   "changed": true,
   "status": "running",
-  "exit_code": null
+  "exit_code": null,
+  "title": "",
+  "is_fullscreen": false,
+  "cols": 120,
+  "rows": 30,
+  "highlights": []
 }
 ```
 
