@@ -20,13 +20,14 @@ import { Command } from "commander";
 import { sendRequest, checkDaemonStatus, stopDaemon, restartDaemon } from "./client";
 import { Response, ErrorResponse, ScreenResponse } from "./protocol";
 import { SUPPORTED_KEYS } from "./session";
+import { version } from "../package.json";
 
 const program = new Command();
 
 program
   .name("tui-use")
   .description("TUI automation for AI agents — like BrowserUse, but for the terminal")
-  .version("0.1.0");
+  .version(version);
 
 // ---- start ----
 program
