@@ -110,6 +110,7 @@ Agents get the a "polaroid" snapshot of the terminal — not a raw byte stream y
 ```
 tui-use start <cmd>                            # Start a program
 tui-use start --cwd <dir> <cmd>                # Start in specific directory
+tui-use start --cwd <dir> "<cmd> -flags"       # Quote the full command to pass flags (e.g. git rebase -i)
 tui-use start --label <name> <cmd>             # Start with label
 tui-use start --cols <n> --rows <n> <cmd>      # Custom terminal size (default: 120x30)
 tui-use use <session_id>                       # Switch to a session

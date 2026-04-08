@@ -50,11 +50,8 @@ Assert: `git log --oneline` on `feature` shows commits C and A; `master` shows B
 
 **Goal:** Launch `git rebase -i master`, vim opens the rebase todo. Accept it as-is with `:wq`.
 
-Note: `tui-use start` consumes flags that start with `-`. Wrap git commands with flags
-in `-- bash -c '...'` to pass them through correctly.
-
 ```bash
-tui-use start -- bash -c 'cd /tmp/tui-git-test-repo && GIT_EDITOR=vim GIT_SEQUENCE_EDITOR=vim git rebase -i master'
+tui-use start --cwd /tmp/tui-git-test-repo "GIT_EDITOR=vim GIT_SEQUENCE_EDITOR=vim git rebase -i master"
 tui-use wait --text "pick"
 ```
 
@@ -152,7 +149,7 @@ message; accept it with `:wq`.
 
 **Step 4.1** — Stage the resolved file:
 ```bash
-tui-use start -- bash -c 'cd /tmp/tui-git-test-repo && git add greeting.txt'
+tui-use start --cwd /tmp/tui-git-test-repo git add greeting.txt
 tui-use wait --format json
 ```
 
@@ -160,7 +157,7 @@ Assert: exit_code is `0`.
 
 **Step 4.2** — Continue the rebase (vim will open for commit message):
 ```bash
-tui-use start -- bash -c 'cd /tmp/tui-git-test-repo && GIT_EDITOR=vim git rebase --continue'
+tui-use start --cwd /tmp/tui-git-test-repo "GIT_EDITOR=vim git rebase --continue"
 tui-use wait --text "greet from feature"
 tui-use snapshot --format json | jq -r '.screen'
 ```
