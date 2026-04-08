@@ -108,97 +108,75 @@ Agents get the a "polaroid" snapshot of the terminal — not a raw byte stream y
 
 ## CLI Interface
 
-### Quick Reference
+### Commands
 
+**start** — Start a program in a PTY session
 ```bash
-tui-use start <cmd>              # Start a program
-tui-use use <session_id>         # Switch to a session
-tui-use snapshot                 # Get current screen
-tui-use wait [ms]                # Wait for screen change
-tui-use type <text>              # Type text
-tui-use press <key>              # Press a key
-tui-use list                     # List sessions
-tui-use kill                     # Kill current session
+tui-use start python3                          # Start Python REPL
+tui-use start -- python3 -c 'print(1+1)'       # Start with flags (use -- before flags)
+tui-use start --cwd ./my-project npm install   # Run in specific directory
+tui-use start --label "dev-server" npm run dev # Label session for identification
+tui-use start --cols 80 --rows 24 vim          # Custom terminal size (default: 120x30)
 ```
 
-### Command Reference
-
-#### start — Start a program in a PTY session
+**use** — Switch to a session for subsequent commands
 ```bash
-tui-use start <cmd> [args...]
+tui-use use happy-okapi                        # Set current session
 ```
 
-Options:
-- `--cwd <dir>` — Working directory (default: current directory)
-- `--label <name>` — Human-readable label for the session (default: command string)
-- `--cols <n>` — Terminal width in columns (default: 120)
-- `--rows <n>` — Terminal height in rows (default: 30)
-
-#### use — Set the current session
+**snapshot** — Get current screen content immediately
 ```bash
-tui-use use <session_id>
+tui-use snapshot                               # Pretty format (human readable)
+tui-use snapshot --format json                 # JSON format for scripting
 ```
 
-#### snapshot — Get current screen content
+**wait** — Wait for screen to change or timeout
 ```bash
-tui-use snapshot [--format <fmt>]
+tui-use wait                                   # Wait for change (default 3000ms)
+tui-use wait 5000                              # Wait up to 5000ms
+tui-use wait --text ">>>"                      # Wait until screen contains text/regex
+tui-use wait --text "ready" --format json      # Combine options
 ```
 
-Options:
-- `--format <fmt>` — Output format: `pretty` (default) or `json`
-
-#### wait — Wait for screen to change
+**type** — Type text into the current session
 ```bash
-tui-use wait [ms] [--text <pattern>] [--format <fmt>]
+tui-use type "hello world"                     # Type text
+tui-use type "hello\n"                         # Type with Enter (\n)
+tui-use type "name\t"                          # Type with Tab (\t)
 ```
 
-Arguments:
-- `[ms]` — Timeout in milliseconds (default: 3000)
-
-Options:
-- `--text <pattern>` — Wait until screen contains text (substring or regex)
-- `--format <fmt>` — Output format: `pretty` (default) or `json`
-
-#### type — Type text into the session
+**press** — Press a special key
 ```bash
-tui-use type <text>
+tui-use press enter                            # Press Enter
+tui-use press ctrl+c                           # Send interrupt signal
+tui-use press arrow_down                       # Press arrow key
+tui-use press q                                # Press single key
 ```
 
-Note: Use `\n` for Enter, `\t` for Tab
-
-#### press — Press a special key
-```bash
-tui-use press <key>
-```
-
-Keys: `ctrl+c`, `ctrl+d`, `enter`, `escape`, `tab`, `arrow_up`, `arrow_down`, `arrow_left`, `arrow_right`, `f1`-`f10`, etc.
+Keys: `ctrl+c`, `ctrl+d`, `enter`, `escape`, `tab`, `arrow_up/down/left/right`, `f1`-`f10`, etc.
 Run `tui-use keys` for the full list.
 
-#### list — List all sessions
+**list** — List all sessions
 ```bash
-tui-use list [--format <fmt>]
+tui-use list                                   # Table view (pretty format)
+tui-use list --format json                     # JSON output
 ```
 
-Options:
-- `--format <fmt>` — Output format: `pretty` (default) or `json`
-
-#### kill — Kill the current session
+**kill** — Kill the current session
 ```bash
-tui-use kill
+tui-use kill                                   # Terminate current session
 ```
 
-### Daemon Management
-
+**daemon** — Manage the background daemon
 ```bash
-tui-use daemon status            # Check if daemon is running
-tui-use daemon stop              # Stop the daemon
-tui-use daemon restart           # Restart the daemon
+tui-use daemon status                          # Check if daemon is running
+tui-use daemon stop                            # Stop the daemon
+tui-use daemon restart                         # Restart the daemon
 ```
 
-### Utility Commands
-
+**keys** — List all supported key names
 ```bash
-tui-use keys                     # List all supported key names for `press`
+tui-use keys                                   # Show all keys for `press` command
 ```
 
 ## Limitations
