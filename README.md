@@ -108,7 +108,7 @@ Agents get the a "polaroid" snapshot of the terminal — not a raw byte stream y
 
 ## CLI Interface
 
-### Core Commands
+### Session Management
 
 ```
 tui-use start <cmd> [args...]                  # Start a program
@@ -117,8 +117,15 @@ tui-use start --cwd <dir> <cmd>                # Run in specific directory
 tui-use start --label <name> <cmd>             # Label session for identification
 tui-use start --cols <n> --rows <n> <cmd>      # Custom terminal size (default: 120x30)
 tui-use use <session_id>                       # Switch to a session
-tui-use snapshot                               # Get screen (pretty format)
-tui-use snapshot --format json                 # Get screen, JSON format
+tui-use info                                   # Show current session details
+tui-use rename <label>                         # Rename current session
+tui-use list                                   # List sessions (pretty format)
+tui-use kill                                   # Kill current session
+```
+
+### Interaction
+
+```
 tui-use wait                                   # Wait for change (default: 3000ms)
 tui-use wait <ms>                              # Wait with custom timeout
 tui-use wait --text <pattern>                  # Wait until screen contains text/regex
@@ -127,14 +134,17 @@ tui-use type <text>                            # Type text
 tui-use type "<text>\n"                        # Type with Enter (\n)
 tui-use type "<text>\t"                        # Type with Tab (\t)
 tui-use press <key>                            # Press a key: enter, ctrl+c, arrow_up, etc.
+tui-use paste "<text>\n<text>\n"               # Paste multi-line text (each line followed by Enter)
+```
+
+### Screen Operations
+
+```
+tui-use snapshot                               # Get screen (pretty format)
+tui-use snapshot --format json                 # Get screen, JSON format
 tui-use scrollup <n>                           # Scroll up to view older content
 tui-use scrolldown <n>                         # Scroll down to view newer content
 tui-use find <pattern>                         # Search text in current screen (regex supported)
-tui-use paste "<text>\n<text>\n"               # Paste multi-line text (each line followed by Enter)
-tui-use info                                   # Show current session details
-tui-use rename <label>                         # Rename current session
-tui-use list                                   # List sessions (pretty format)
-tui-use kill                                   # Kill current session
 ```
 
 ### Daemon Commands
