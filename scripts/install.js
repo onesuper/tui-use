@@ -49,15 +49,22 @@ function installPrebuild(nodePtyDir) {
     return false;
   }
 
+  const prebuildDir = path.dirname(prebuildPath);
   const targetDir = path.join(nodePtyDir, 'build', 'Release');
-  const targetPath = path.join(targetDir, 'pty.node');
 
   try {
     if (!fs.existsSync(targetDir)) {
       fs.mkdirSync(targetDir, { recursive: true });
     }
-    fs.copyFileSync(prebuildPath, targetPath);
-    fs.chmodSync(targetPath, 0o755);
+    // Copy pty.node
+    fs.copyFileSync(prebuildPath, path.join(targetDir, 'pty.node'));
+    fs.chmodSync(path.join(targetDir, 'pty.node'), 0o755);
+    // Copy spawn-helper if present (required on macOS/Linux for PTY spawning)
+    const spawnHelperSrc = path.join(prebuildDir, 'spawn-helper');
+    if (fs.existsSync(spawnHelperSrc)) {
+      fs.copyFileSync(spawnHelperSrc, path.join(targetDir, 'spawn-helper'));
+      fs.chmodSync(path.join(targetDir, 'spawn-helper'), 0o755);
+    }
     console.log(`[tui-use] Installed prebuilt binary for ${platformKey}`);
     return true;
   } catch (err) {
