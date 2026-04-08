@@ -39,15 +39,16 @@ interface Buffer {
 /**
  * Extract all highlighted (inverse-video) spans from the terminal buffer.
  *
- * @param buffer - The active xterm buffer (terminal.buffer.active)
- * @param rows   - Number of rows to scan
- * @returns      - Array of Highlight objects, in top-to-bottom, left-to-right order
+ * @param buffer     - The active xterm buffer (terminal.buffer.active)
+ * @param rows       - Number of rows to scan
+ * @param startY     - Starting row offset (viewportY for scrolled views)
+ * @returns          - Array of Highlight objects, in top-to-bottom, left-to-right order
  */
-export function extractHighlights(buffer: Buffer, rows: number): Highlight[] {
+export function extractHighlights(buffer: Buffer, rows: number, startY = 0): Highlight[] {
   const highlights: Highlight[] = [];
 
   for (let y = 0; y < rows; y++) {
-    const line = buffer.getLine(y);
+    const line = buffer.getLine(startY + y);
     if (!line) continue;
 
     const rawText = line.translateToString(false);

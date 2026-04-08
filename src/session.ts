@@ -81,7 +81,7 @@ export class Session {
     const cols = options.cols ?? 120;
     const rows = options.rows ?? 30;
 
-    this.terminal = new Terminal({ cols, rows, allowProposedApi: true });
+    this.terminal = new Terminal({ cols, rows, allowProposedApi: true, scrollback: 10000 });
 
     // Initialize fullscreen status immediately (onBufferChange only fires on changes)
     this._isFullscreen = extractIsFullscreen(this.terminal.buffer);
@@ -158,8 +158,10 @@ export class Session {
   snapshot(): { lines: string[]; cursor: { x: number; y: number }; changed: boolean; highlights: Highlight[]; title: string; is_fullscreen: boolean } {
     const buf = this.terminal.buffer.active;
     const lines: string[] = [];
+    // Start from viewportY to support scrolling through buffer history
+    const startY = buf.viewportY;
     for (let i = 0; i < this.terminal.rows; i++) {
-      lines.push((buf.getLine(i)?.translateToString(true) ?? "").trimEnd());
+      lines.push((buf.getLine(startY + i)?.translateToString(true) ?? "").trimEnd());
     }
     // Remove trailing empty lines
     while (lines.length > 0 && lines[lines.length - 1] === "") {
@@ -172,7 +174,7 @@ export class Session {
     const screen = lines.join("\n");
     const changed = screen !== this.lastSnapshot;
     this.lastSnapshot = screen;
-    const highlights = extractHighlights(buf, this.terminal.rows);
+    const highlights = extractHighlights(buf, this.terminal.rows, startY);
     return {
       lines,
       cursor: { x: buf.cursorX, y: buf.cursorY },
@@ -221,8 +223,9 @@ export class Session {
         // Get current rendered screen (don't update lastSnapshot yet)
         const buf = this.terminal.buffer.active;
         const lines: string[] = [];
+        const startY = buf.viewportY;
         for (let i = 0; i < this.terminal.rows; i++) {
-          lines.push((buf.getLine(i)?.translateToString(true) ?? "").trimEnd());
+          lines.push((buf.getLine(startY + i)?.translateToString(true) ?? "").trimEnd());
         }
         while (lines.length > 0 && lines[lines.length - 1] === "") lines.pop();
         while (lines.length > 0 && lines[0] === "") lines.shift();
@@ -294,19 +297,15 @@ export class Session {
 
   /** Scroll the terminal buffer (for non-fullscreen apps like less/cat) */
   scroll(lines: number): boolean {
-    // For PTY scrolling, we can only scroll within the scrollback buffer
-    // This is mainly useful for non-fullscreen applications
-    const buffer = this.terminal.buffer;
-    if (lines > 0) {
-      // Scroll down (view older content)
-      // In xterm.js, we can manipulate the viewport
-      // For now, we'll return success but this is limited by the PTY
+    // Scroll the viewport to view buffer history
+    // positive lines = scroll down (view older content)
+    // negative lines = scroll up (view newer content)
+    try {
+      this.terminal.scrollLines(lines);
       return true;
-    } else if (lines < 0) {
-      // Scroll up (view newer content)
-      return true;
+    } catch {
+      return false;
     }
-    return true;
   }
 
   /** Rename the session */
