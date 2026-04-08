@@ -6,7 +6,7 @@
 
 tui-use gives agents access to the parts of the terminal that bash can't reach — every REPL, installer, and TUI app built for humans.
 
-[![License](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE) [![Node](https://img.shields.io/badge/node-18+-green.svg)](https://nodejs.org/)
+[![License](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE) [![npm](https://img.shields.io/npm/v/tui-use.svg)](https://www.npmjs.com/package/tui-use)
 
 </div>
 
