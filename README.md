@@ -23,6 +23,8 @@ tui-use fills that gap. Spawn any program in a PTY, observe its screen as plain 
 - **Database CLIs** — Connect to psql or mysql, run queries, check schemas, without needing a separate API or ORM layer.
 - **SSH + remote interactive programs** — SSH into a server and keep operating interactive programs on the other end, not just run one-off commands.
 - **TUI applications** — Navigate vim, lazygit, htop, fzf, and other full-screen programs that were never designed to be scripted.
+- **Scientific computing & large in-memory state** — When your variables are arrays with millions of elements that took an hour to compute, you can't dump them to a log file. Drop an agent into a live Python interpreter or pdb session to debug, inspect, and optimize without losing the running process.
+- **Debugger sessions** — Drive GDB, PDB, or any interactive debugger. Set breakpoints, step through code, inspect variables — all from an agent, without restarting the process.
 
 Perfect for **Claude Code**, **Cursor**, **Codex**, **Gemini CLI**, **OpenCode** and other AI coding agents.
 
