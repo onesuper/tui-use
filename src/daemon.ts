@@ -136,7 +136,7 @@ async function handleRequest(req: Request): Promise<Response> {
       if (!session) {
         return { type: "error", message: `Session not found: ${currentSession}` };
       }
-      const { lines, cursor, changed, highlights, title, is_fullscreen } = await session.wait((req as WaitRequest).timeout_ms ?? 3000, (req as WaitRequest).text);
+      const { lines, cursor, changed, highlights, title, is_fullscreen } = await session.wait((req as WaitRequest).timeout_ms ?? 3000, (req as WaitRequest).text, (req as WaitRequest).debounce_ms ?? 100);
       return {
         type: "wait",
         session_id: currentSession,

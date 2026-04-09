@@ -16,7 +16,7 @@ AI agents can run shell commands and call APIs — but they can't interact with 
 
 tui-use fills that gap. Spawn any program in a PTY, read its screen as plain text, send keystrokes — all from the command line. Built for the cases where bash isn't enough: live debugging sessions with gigabytes of in-memory state, interactive REPLs, full-screen TUI apps.
 
-**Use cases:**
+### Use cases
 
 - **Scientific computing & large in-memory state** — When your variables are arrays with millions of elements that took an hour to compute, you can't dump them to a log file. Drop an agent into a live Python interpreter or pdb session to debug, inspect, and optimize without losing the running process.
 - **Debugger sessions** — Drive GDB, PDB, or any interactive debugger. Set breakpoints, step through code, inspect variables — all from an agent, without restarting the process.
@@ -25,12 +25,20 @@ tui-use fills that gap. Spawn any program in a PTY, read its screen as plain tex
 
 Perfect for **Claude Code**, **Cursor**, **Codex**, **Gemini CLI**, **OpenCode** and other AI coding agents.
 
+### Why not tmux?
+
+tmux is great for humans — but it was never designed for agents.
+
+`tmux send-keys` has no way to signal when a program is done responding. Agents are stuck guessing: `sleep 2` and hope, or poll `capture-pane` in a loop.
+
+tui-use observes every PTY render event directly. `wait` blocks until the screen stabilizes — no sleep, no polling. `wait --text ">>>"` goes further: wait for a semantic signal, not just silence.
+
 ## Features
 
 - **🖥️ Full VT Rendering** — PTY output is processed by a headless xterm emulator. ANSI escape sequences, cursor movement, and screen clearing all work correctly. The `screen` field is always clean plain text.
+- **⏱️ Smart Wait** — `wait` blocks until the screen has been stable for a configurable idle window (debounce), so agents never need to guess how long to sleep. Use `wait --text <pattern>` for semantic signals — wait until the program tells you it's ready, not just until it goes quiet.
 - **📸 Snapshot Model** — Interacting with a terminal program is just a loop: read what's on screen, decide what to type, repeat. tui-use makes that loop explicit — no async streams, no timing guesswork, no partial output to reassemble.
 - **🔍 Highlights** — Every snapshot includes a `highlights` field listing the inverse-video spans on screen — the standard way TUI programs indicate selected items. Agents can read which menu option, tab, or button is currently active without parsing text or guessing from cursor position.
-- **⌨️ Rich Key Support** — Send text, Enter, Ctrl+C, arrow keys, F-keys, and more. Run `tui-use keys` to see the full list.
 
 ## Installation
 
@@ -105,29 +113,19 @@ Ask Codex to use `tui-use`, or explicitly invoke the installed plugin/skill from
 
 ## How It Works
 
-Behind the scenes, tui-use runs a daemon that manages PTY sessions:
+tui-use sits directly on the PTY event stream — every byte the program outputs flows through a headless terminal emulator in real time.
+
+This is what makes `wait` possible:
 
 ```
-┌─────────────┐     HTTP      ┌─────────────┐     PTY      ┌─────────────┐
-│  tui-use    │ ◄───────────► │   Daemon    │ ◄─────────►  │   Program   │
-│   (CLI)     │               │ (background)│              │  (vim/htop) │
-└─────────────┘               └─────────────┘              └─────────────┘
-                                     │
-                                     ▼
-                              ┌─────────────┐
-                              │  @xterm/    │
-                              │  headless   │
-                              │ (xterm emu) │
-                              └─────────────┘
+program outputs → PTY → xterm emulator → render event
+                                        → debounce timer resets on each change
+                                        → 100ms of silence → wait resolves ✓
 ```
 
-**The rendering pipeline:**
+`wait --text <pattern>` goes further — it resolves the moment a known prompt appears, giving agents a semantic readiness signal rather than just a silence window.
 
-1. Target program outputs ANSI escape sequences (colors, cursor moves, screen clears)
-2. `@xterm/headless` renders them into a complete terminal screen state
-3. `snapshot` returns clean plain text `screen` content, plus metadata like `highlights` (inverse-video regions), `title` (window title), and `is_fullscreen` (alternate buffer detection)
-
-Agents get the a "polaroid" snapshot of the terminal — not a raw byte stream you need to reassemble.
+Behind the scenes, a daemon process manages PTY sessions so they persist across CLI calls.
 
 ## CLI Interface
 
@@ -150,20 +148,16 @@ tui-use snapshot --format json                 # JSON output
 tui-use scrollup <n>                           # Scroll up to older content
 tui-use scrolldown <n>                         # Scroll down to newer content
 tui-use find <pattern>                         # Search in screen (regex)
-tui-use wait                                   # Wait for screen change
-tui-use wait <ms>                              # Custom timeout (default: 3000ms)
+tui-use wait                                   # Wait for screen change (default timeout: 3000ms)
+tui-use wait <ms>                              # Custom timeout, e.g. wait 5000
 tui-use wait --text <pattern>                  # Wait until screen contains pattern
+tui-use wait --debounce <ms>                   # Idle time after last change before resolving (default: 100ms)
 tui-use wait --format json                     # JSON output
 tui-use list                                   # List all sessions
 tui-use use <session_id>                       # Switch to a session
 tui-use info                                   # Show session details
 tui-use rename <label>                         # Rename session
 tui-use kill                                   # Kill current session
-```
-
-### Daemon Commands
-
-```
 tui-use daemon status                          # Check if daemon is running
 tui-use daemon stop                            # Stop the daemon
 tui-use daemon restart                         # Restart the daemon
@@ -181,10 +175,10 @@ tui-use daemon restart                         # Restart the daemon
 The installer automatically detects your platform and uses a prebuilt binary when available. If no compatible prebuild exists, it will automatically rebuild from source (requires build tools).
 
 **Build tools** (only needed if automatic rebuild fails):
+
 - macOS: `xcode-select --install`
 - Linux: `sudo apt-get install build-essential python3 g++`
 - Windows: Not yet supported
-
 
 ## Development
 

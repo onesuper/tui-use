@@ -41,6 +41,7 @@ export interface WaitRequest {
   type: "wait";
   timeout_ms?: number;   // default 3000
   text?: string;         // substring or regex — block until screen contains text
+  debounce_ms?: number;  // idle time after last change before resolving (default 100ms)
 }
 
 /** Send literal text to the PTY. Supports \n \r \t escape sequences. */

@@ -1,7 +1,7 @@
 {
   "name": "tui-use",
   "description": "TUI automation for AI agents — interact with REPLs, interactive installers, and TUI applications",
-  "version": "0.3.0",
+  "version": "0.4.0",
   "author": {
     "name": "onesuper",
     "email": "onsuper.cheng@gmail.com"
