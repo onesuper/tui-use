@@ -51,6 +51,33 @@ npm run build
 npm link
 ```
 
+## OpenAI Codex Plugin
+
+**Note:** You must install the CLI (see Installation section above) before using the plugin — the plugin only provides skill definitions, the CLI provides the actual PTY functionality.
+
+This repo includes a Codex plugin bundle at `plugins/tui-use` and a local repo marketplace at `.agents/plugins/marketplace.json`.
+
+### Install from this repo
+
+#### Step 1: Open this repository in Codex
+
+Start Codex with this repository as the working directory, or restart Codex if it was already open while you cloned or updated the repo.
+
+#### Step 2: Open the plugin directory
+
+```
+codex
+/plugins
+```
+
+#### Step 3: Install the plugin
+
+Choose the `tui-use local plugins` marketplace, open `tui-use`, and select `Install plugin`.
+
+#### Step 4: Start a new thread
+
+Ask Codex to use `tui-use`, or explicitly invoke the installed plugin/skill from the prompt.
+
 ## Claude Code Plugin
 
 **Note:** You must install the CLI (see Installation section above) before using the plugin — the plugin only provides skill definitions, the CLI provides the actual PTY functionality.
