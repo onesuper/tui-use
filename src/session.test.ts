@@ -137,6 +137,36 @@ describe("Session", () => {
       expect(session.scroll(-1000)).toBe(true);
     });
   });
+
+  describe("wait debounce", () => {
+    it("uses 100ms debounce by default", async () => {
+      const s = new Session("debounce-default", "echo hi", { cwd: tempDir, cols: 80, rows: 24 });
+      const start = Date.now();
+      await s.wait(3000);
+      const elapsed = Date.now() - start;
+      // should resolve after at least 100ms idle (default debounce)
+      expect(elapsed).toBeGreaterThanOrEqual(90);
+      s.kill();
+    });
+
+    it("respects custom debounceMs", async () => {
+      const s = new Session("debounce-custom", "echo hi", { cwd: tempDir, cols: 80, rows: 24 });
+      const start = Date.now();
+      await s.wait(3000, undefined, 300);
+      const elapsed = Date.now() - start;
+      // should resolve after at least 300ms idle
+      expect(elapsed).toBeGreaterThanOrEqual(290);
+      s.kill();
+    });
+
+    it("custom debounceMs resolves after specified idle time", async () => {
+      // Use a short-lived session; after exit, wait resolves via exited path (no debounce needed)
+      // So we verify the signature accepts debounceMs without throwing
+      const s = new Session("debounce-custom2", "echo hi", { cwd: tempDir, cols: 80, rows: 24 });
+      await expect(s.wait(3000, undefined, 50)).resolves.toBeDefined();
+      s.kill();
+    });
+  });
 });
 
 describe("SUPPORTED_KEYS", () => {

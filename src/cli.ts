@@ -76,9 +76,11 @@ program
     "Wait for screen to change or timeout.\n" +
     "  wait           → wait for screen to change (default 3000ms)\n" +
     "  wait 5000      → wait for 5000ms\n" +
-    "  wait --text \"pattern\"  → wait until screen contains text"
+    "  wait --text \"pattern\"  → wait until screen contains text\n" +
+    "  wait --debounce 300    → wait until screen is stable for 300ms (default: 100ms)"
   )
   .option("--text <pattern>", "Wait until screen contains text (substring or regex)")
+  .option("--debounce <ms>", "Idle time after last change before resolving, in ms (default: 100)", "100")
   .option("--format <fmt>", "Output format: pretty, json (default: pretty)", "pretty")
   .action(async (duration: string | undefined, opts) => {
     // Parse duration (position arg) or use default
@@ -89,10 +91,12 @@ program
         timeoutMs = parsed;
       }
     }
+    const debounceMs = parseInt(opts.debounce, 10);
     const res = await sendRequest({
       type: "wait",
       timeout_ms: timeoutMs,
       text: opts.text,
+      debounce_ms: isNaN(debounceMs) ? 100 : debounceMs,
     });
     handleResponse(res, (r) => printScreen(r as ScreenResponse, opts.format as "pretty" | "json"));
   });

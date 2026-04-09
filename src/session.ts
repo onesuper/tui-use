@@ -208,7 +208,8 @@ export class Session {
    */
   async wait(
     timeoutMs: number = 3000,
-    text?: string
+    text?: string,
+    debounceMs: number = 100
   ): Promise<{ lines: string[]; cursor: { x: number; y: number }; changed: boolean; highlights: ReturnType<typeof extractHighlights>; title: string; is_fullscreen: boolean }> {
     const beforeScreen = this.lastSnapshot;
     const beforeTitle = this._title;
@@ -258,7 +259,7 @@ export class Session {
             { screen: currentScreen, title: this._title, is_fullscreen: this._isFullscreen }
           )) {
             if (idleTimer) clearTimeout(idleTimer);
-            idleTimer = setTimeout(done, 100);
+            idleTimer = setTimeout(done, debounceMs);
           }
         }
       };
