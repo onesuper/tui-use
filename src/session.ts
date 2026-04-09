@@ -25,14 +25,20 @@ export function extractIsFullscreen(bufferNamespace: { active: { type: string } 
 
 /** Check if any observable state has changed between two snapshots. */
 export function hasChanged(
-  before: { screen: string; title: string; is_fullscreen: boolean },
-  current: { screen: string; title: string; is_fullscreen: boolean }
+  before: { screen: string; title: string; is_fullscreen: boolean; cursor?: { x: number; y: number } },
+  current: { screen: string; title: string; is_fullscreen: boolean; cursor?: { x: number; y: number } }
 ): boolean {
-  return (
+  if (
     current.screen !== before.screen ||
     current.title !== before.title ||
     current.is_fullscreen !== before.is_fullscreen
-  );
+  ) return true;
+
+  if (before.cursor && current.cursor) {
+    if (current.cursor.x !== before.cursor.x || current.cursor.y !== before.cursor.y) return true;
+  }
+
+  return false;
 }
 
 // Special key name → escape sequence mapping
@@ -214,6 +220,8 @@ export class Session {
     const beforeScreen = this.lastSnapshot;
     const beforeTitle = this._title;
     const beforeFullscreen = this._isFullscreen;
+    const buf0 = this.terminal.buffer.active;
+    const beforeCursor = { x: buf0.cursorX, y: buf0.cursorY };
 
     if (this._status === "exited") {
       return this.snapshot();
@@ -254,9 +262,10 @@ export class Session {
           if (new RegExp(text).test(currentScreen)) { done(); return; }
         } else {
           // Change mode: resolve when any observable state differs from before AND has been idle
+          const currentCursor = { x: buf.cursorX, y: buf.cursorY };
           if (hasChanged(
-            { screen: beforeScreen, title: beforeTitle, is_fullscreen: beforeFullscreen },
-            { screen: currentScreen, title: this._title, is_fullscreen: this._isFullscreen }
+            { screen: beforeScreen, title: beforeTitle, is_fullscreen: beforeFullscreen, cursor: beforeCursor },
+            { screen: currentScreen, title: this._title, is_fullscreen: this._isFullscreen, cursor: currentCursor }
           )) {
             if (idleTimer) clearTimeout(idleTimer);
             idleTimer = setTimeout(done, debounceMs);

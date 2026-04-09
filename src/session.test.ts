@@ -52,6 +52,28 @@ describe("hasChanged", () => {
   it("returns true when is_fullscreen changes even if screen is the same", () => {
     expect(hasChanged(base, { screen: "hello", title: "", is_fullscreen: true })).toBe(true);
   });
+
+  it("returns true when cursor position changes even if screen text is the same", () => {
+    const before = { screen: "hello", title: "", is_fullscreen: false, cursor: { x: 0, y: 0 } };
+    const current = { screen: "hello", title: "", is_fullscreen: false, cursor: { x: 5, y: 0 } };
+    expect(hasChanged(before, current)).toBe(true);
+  });
+
+  it("returns true when cursor row changes", () => {
+    const before = { screen: "hello", title: "", is_fullscreen: false, cursor: { x: 0, y: 0 } };
+    const current = { screen: "hello", title: "", is_fullscreen: false, cursor: { x: 0, y: 1 } };
+    expect(hasChanged(before, current)).toBe(true);
+  });
+
+  it("returns false when cursor position is the same", () => {
+    const before = { screen: "hello", title: "", is_fullscreen: false, cursor: { x: 3, y: 2 } };
+    const current = { screen: "hello", title: "", is_fullscreen: false, cursor: { x: 3, y: 2 } };
+    expect(hasChanged(before, current)).toBe(false);
+  });
+
+  it("ignores cursor when cursor is not provided (backward compatible)", () => {
+    expect(hasChanged(base, { screen: "hello", title: "", is_fullscreen: false })).toBe(false);
+  });
 });
 
 describe("Session", () => {
