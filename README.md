@@ -4,7 +4,7 @@
 
 **Like BrowserUse, but for the terminal.**
 
-tui-use gives agents access to the parts of the terminal that bash can't reach — every REPL, installer, and TUI app built for humans.
+tui-use lets agents interact with programs that expect a human at the keyboard — REPLs, debuggers, TUI apps, and anything else bash can't reach.
 
 [![License](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE) [![npm](https://img.shields.io/npm/v/tui-use.svg)](https://www.npmjs.com/package/tui-use)
 
@@ -12,19 +12,16 @@ tui-use gives agents access to the parts of the terminal that bash can't reach �
 
 ## What is tui-use?
 
-AI agents can run shell commands, read files, and call APIs. But they stall the moment a program asks for input — because most CLI tools were built for humans, not agents.
+AI agents can run shell commands and call APIs — but they can't interact with programs that expect a human at the keyboard. The moment a REPL waits for input, a debugger hits a breakpoint, or a TUI app renders a menu, agents are stuck.
 
-tui-use fills that gap. Spawn any program in a PTY, observe its screen as plain text, send keystrokes — all from the command line. If a human can operate it in a terminal, an agent can too.
+tui-use fills that gap. Spawn any program in a PTY, read its screen as plain text, send keystrokes — all from the command line. Built for the cases where bash isn't enough: live debugging sessions with gigabytes of in-memory state, interactive REPLs, full-screen TUI apps.
 
 **Use cases:**
 
-- **REPL sessions** — Run code in Python, Node, psql, or redis-cli, inspect the output, and keep going. No more one-shot scripts when you need an interactive session.
-- **Interactive scaffolding tools** — Step through `npm create`, `cargo new`, `create-react-app`, and any other CLI wizard that asks questions before doing anything.
-- **Database CLIs** — Connect to psql or mysql, run queries, check schemas, without needing a separate API or ORM layer.
-- **SSH + remote interactive programs** — SSH into a server and keep operating interactive programs on the other end, not just run one-off commands.
-- **TUI applications** — Navigate vim, lazygit, htop, fzf, and other full-screen programs that were never designed to be scripted.
 - **Scientific computing & large in-memory state** — When your variables are arrays with millions of elements that took an hour to compute, you can't dump them to a log file. Drop an agent into a live Python interpreter or pdb session to debug, inspect, and optimize without losing the running process.
 - **Debugger sessions** — Drive GDB, PDB, or any interactive debugger. Set breakpoints, step through code, inspect variables — all from an agent, without restarting the process.
+- **REPL sessions** — Run code in Python, Node, or any interactive interpreter, inspect the output, and keep going. No more one-shot scripts when you need an interactive session.
+- **TUI applications** — Navigate vim, lazygit, htop, fzf, and other full-screen programs that were never designed to be scripted.
 
 Perfect for **Claude Code**, **Cursor**, **Codex**, **Gemini CLI**, **OpenCode** and other AI coding agents.
 
