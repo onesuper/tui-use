@@ -166,7 +166,6 @@ tui-use daemon restart                         # Restart the daemon
 ## Limitations
 
 - **TUI color/style info is mostly lost** — `screen` contains plain text only; colors and most formatting are stripped. Selected items and active elements are captured in `highlights` via inverse-video detection. Window title and fullscreen mode are captured in `title` and `is_fullscreen`.
-- **Windows not supported** — requires Unix PTY (macOS/Linux). Windows support via ConPTY is planned.
 
 ## Troubleshooting
 
@@ -178,7 +177,7 @@ The installer automatically detects your platform and uses a prebuilt binary whe
 
 - macOS: `xcode-select --install`
 - Linux: `sudo apt-get install build-essential python3 g++`
-- Windows: Not yet supported
+- Windows: Prebuilt binaries available (no build tools needed)
 
 ## Development
 
