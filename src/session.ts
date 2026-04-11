@@ -442,14 +442,15 @@ export class Session {
       return matches;
     }
 
-    for (let y = 0; y < this.terminal.rows; y++) {
-      const line = buf.getLine(y);
+    const startY = buf.viewportY;
+    for (let i = 0; i < this.terminal.rows; i++) {
+      const line = buf.getLine(startY + i);
       if (line) {
         const lineText = line.translateToString(true);
         const match = regex.exec(lineText);
         if (match) {
           matches.push({
-            line: y,
+            line: i,
             col_start: match.index,
             col_end: match.index + match[0].length,
             text: match[0],

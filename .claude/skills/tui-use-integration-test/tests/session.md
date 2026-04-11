@@ -45,10 +45,12 @@ Assert: `list` shows "No active sessions" or session not in list
 **Goal:** Manage multiple concurrent sessions.
 
 ```bash
-SID1=$(tui-use start --label "first" python3)
-SID2=$(tui-use start --label "second" python3)
+SID1=$(tui-use start --label "first" python3 2>/dev/null)
+SID2=$(tui-use start --label "second" python3 2>/dev/null)
 tui-use list
 ```
+
+Note: redirect stderr to /dev/null so daemon startup messages don't pollute the captured session ID.
 
 **Step 2.1** — Verify both sessions exist:
 ```bash

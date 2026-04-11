@@ -42,21 +42,23 @@ tui-use kill
 **Goal:** Use regex patterns for flexible matching.
 
 ```bash
-tui-use start cat -n /usr/share/dict/words
-tui-use wait --text "1  "
+tui-use start --cwd /tmp "bash -c 'seq 1 20 | nl -ba'"
+tui-use wait
 ```
 
-**Step 2.1** — Find line starting with number:
+Note: use `nl` to number 20 lines — small enough to fit in one screen (terminal is 30 rows), so the full output is visible when wait resolves.
+
+**Step 2.1** — Find line with number 1:
 ```bash
 tui-use find "^\s*1\s"
 ```
-Assert: Returns match with `line` >= 0, `text` contains "1"
+Assert: Returns match with `text` containing "1"
 
-**Step 2.2** — Find words starting with A:
+**Step 2.2** — Find lines with two-digit numbers:
 ```bash
-tui-use find "\s+A"
+tui-use find "^\s*[1-9][0-9]"
 ```
-Assert: Returns at least one match
+Assert: Returns at least one match (lines 10-20)
 
 **Cleanup:**
 ```bash

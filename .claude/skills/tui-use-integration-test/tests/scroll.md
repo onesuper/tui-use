@@ -14,29 +14,31 @@ tui-use daemon stop 2>/dev/null || true
 **Goal:** View content that scrolled off screen.
 
 ```bash
-tui-use start cat -n /usr/share/dict/words
-tui-use wait --text "1  "
+tui-use start --cwd /tmp "seq 200"
+tui-use wait --text "^200$"
 ```
 
-**Step 1.1** — Capture initial screen:
-```bash
-tui-use snapshot --format json | jq -r '.screen' | head -5
-```
-Note first 5 lines (should show lines 1-5)
+Note: `seq 200` outputs 200 lines (more than the 30-row terminal). Use `--text "^200$"` to wait until the last line appears — semantic signal, no timing guesswork.
 
-**Step 1.2** — Scroll down:
+**Step 1.1** — Capture initial screen (bottom of output):
 ```bash
-tui-use scrolldown 10
-tui-use snapshot --format json | jq -r '.screen' | head -5
+tui-use snapshot --format json | jq -r '.screen' | head -3
 ```
-Assert: Screen content changed, now shows different lines (lines 11-15 or scrollback content)
+Assert: Shows lines near 200 (e.g. 172, 173, 174...)
 
-**Step 1.3** — Scroll up:
+**Step 1.2** — Scroll up:
 ```bash
-tui-use scrollup 10
-tui-use snapshot --format json | jq -r '.screen' | head -5
+tui-use scrollup 20
+tui-use snapshot --format json | jq -r '.screen' | head -3
 ```
-Assert: Screen shows content closer to initial view
+Assert: Screen shows earlier lines (e.g. 152, 153, 154...)
+
+**Step 1.3** — Scroll back down:
+```bash
+tui-use scrolldown 20
+tui-use snapshot --format json | jq -r '.screen' | head -3
+```
+Assert: Screen returns to bottom (near 172, 173, 174...)
 
 **Cleanup:**
 ```bash
@@ -50,22 +52,22 @@ tui-use kill
 **Goal:** Use scroll to find content that was off-screen.
 
 ```bash
-tui-use start cat -n /usr/share/dict/words
-tui-use wait --text "1  "
+tui-use start --cwd /tmp "seq 200"
+tui-use wait --text "^200$"
 ```
 
-**Step 2.1** — Try to find B words (initially not visible):
+**Step 2.1** — Confirm viewport is near 200 (single-digit lines not visible):
 ```bash
-tui-use find "^\s*[0-9]+\s+B"
+tui-use find "^[1-9]$"
 ```
-Assert: May or may not find, depending on visible area
+Assert: Returns no matches (lines 1-9 are scrolled off the top)
 
-**Step 2.2** — Scroll down and search again:
+**Step 2.2** — Scroll up and search for early content:
 ```bash
-tui-use scrolldown 50
-tui-use find "^\s*[0-9]+\s+B"
+tui-use scrollup 170
+tui-use find "^[1-9]$"
 ```
-Assert: Now finds matches with B words
+Assert: Now finds single-digit lines (1-9) that were previously off-screen
 
 **Cleanup:**
 ```bash

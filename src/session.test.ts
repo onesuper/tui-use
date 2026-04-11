@@ -103,6 +103,35 @@ describe("Session", () => {
       const matches = session.find("h.llo");
       expect(matches.length).toBeGreaterThan(0);
     });
+
+    it("only finds text in the current viewport, not scrollback", async () => {
+      // Print more lines than the terminal height (24 rows) so "hello" scrolls off screen
+      const session2 = new Session("find-viewport-test", "bash -c 'echo hello; seq 1 50'", {
+        cwd: tempDir,
+        cols: 80,
+        rows: 24,
+      });
+      // Wait for output to finish
+      await session2.wait(3000, "^50$");
+
+      // "hello" has scrolled off the viewport — find should NOT return it
+      const matches = session2.find("hello");
+      expect(matches).toHaveLength(0);
+
+      session2.kill();
+    });
+
+    it("line numbers returned by find match snapshot line numbers", async () => {
+      await new Promise((resolve) => setTimeout(resolve, 100));
+
+      const matches = session.find("hello");
+      expect(matches.length).toBeGreaterThan(0);
+
+      // The line number from find should correspond to the same line in snapshot
+      const snap = session.snapshot();
+      const lineFromFind = matches[0].line;
+      expect(snap.lines[lineFromFind]).toContain("hello");
+    });
   });
 
   describe("rename", () => {
