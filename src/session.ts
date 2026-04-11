@@ -268,7 +268,6 @@ export class Session {
       check(); // check immediately in case already changed
     });
 
-    this.changeListeners = this.changeListeners.filter((l) => typeof l === "function");
     return this.snapshot();
   }
 
@@ -293,7 +292,12 @@ export class Session {
   find(pattern: string): Array<{ line: number; col_start: number; col_end: number; text: string }> {
     const matches: Array<{ line: number; col_start: number; col_end: number; text: string }> = [];
     const buf = this.terminal.buffer.active;
-    const regex = new RegExp(pattern);
+    let regex: RegExp;
+    try {
+      regex = new RegExp(pattern);
+    } catch {
+      return matches;
+    }
 
     for (let y = 0; y < this.terminal.rows; y++) {
       const line = buf.getLine(y);
@@ -316,8 +320,8 @@ export class Session {
   /** Scroll the terminal buffer (for non-fullscreen apps like less/cat) */
   scroll(lines: number): boolean {
     // Scroll the viewport to view buffer history
-    // positive lines = scroll down (view older content)
-    // negative lines = scroll up (view newer content)
+    // positive lines = scroll down (view newer content)
+    // negative lines = scroll up (view older content)
     try {
       this.terminal.scrollLines(lines);
       return true;
@@ -328,7 +332,7 @@ export class Session {
 
   /** Rename the session */
   rename(newLabel: string): void {
-    (this as any).label = newLabel;
+    this.label = newLabel;
   }
 
   private notifyListeners(): void {
