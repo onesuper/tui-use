@@ -27,8 +27,18 @@ import {
 const TERMLINK_DIR = path.join(os.homedir(), ".tui-use");
 export const SOCKET_PATH = path.join(TERMLINK_DIR, "daemon.sock");
 export const PID_PATH = path.join(TERMLINK_DIR, "daemon.pid");
+export const DAEMON_PORT = 7654;
 
 const IDLE_TIMEOUT_MS = 5 * 60 * 1000; // 5 minutes
+
+// Platform-aware server listening configuration
+function startServerListener(server: net.Server, callback: () => void): void {
+  if (process.platform === "win32") {
+    server.listen(DAEMON_PORT, callback);
+  } else {
+    server.listen(SOCKET_PATH, callback);
+  }
+}
 
 // ---- Session registry ----
 
@@ -111,7 +121,7 @@ async function handleRequest(req: Request): Promise<Response> {
       if (!session) {
         return { type: "error", message: `Session not found: ${currentSession}` };
       }
-      const { lines, cursor, changed, highlights, title, is_fullscreen } = session.snapshot();
+      const { lines, cursor, changed, highlights, title, is_fullscreen } = session.snapshot({ color: (req as SnapshotRequest).color });
       return {
         type: "snapshot",
         session_id: currentSession,
@@ -136,7 +146,8 @@ async function handleRequest(req: Request): Promise<Response> {
       if (!session) {
         return { type: "error", message: `Session not found: ${currentSession}` };
       }
-      const { lines, cursor, changed, highlights, title, is_fullscreen } = await session.wait((req as WaitRequest).timeout_ms ?? 3000, (req as WaitRequest).text, (req as WaitRequest).debounce_ms ?? 100);
+      const waitReq = req as WaitRequest;
+      const { lines, cursor, changed, highlights, title, is_fullscreen } = await session.wait(waitReq.timeout_ms ?? 3000, waitReq.text, waitReq.debounce_ms ?? 100, { color: waitReq.color });
       return {
         type: "wait",
         session_id: currentSession,
@@ -302,8 +313,8 @@ async function handleRequest(req: Request): Promise<Response> {
 function startServer() {
   fs.mkdirSync(TERMLINK_DIR, { recursive: true });
 
-  // Clean up stale socket
-  if (fs.existsSync(SOCKET_PATH)) {
+  // Clean up stale socket (Unix only)
+  if (process.platform !== "win32" && fs.existsSync(SOCKET_PATH)) {
     fs.unlinkSync(SOCKET_PATH);
   }
 
@@ -328,43 +339,86 @@ function startServer() {
         }
 
         handleRequest(req).then((res) => {
-          socket.write(JSON.stringify(res) + "\n");
+          try {
+            socket.write(JSON.stringify(res) + "\n");
+          } catch (writeErr) {
+            const msg = writeErr instanceof Error ? writeErr.message : String(writeErr);
+            process.stderr.write(`[daemon] failed to write response: ${msg}\n`);
+          }
         }).catch((err) => {
-          process.stderr.write(`[daemon] handleRequest error: ${err?.stack ?? err}\n`);
-          socket.write(JSON.stringify({ type: "error", message: String(err?.message ?? err) }) + "\n");
+          const errMsg = err instanceof Error ? err.stack ?? err.message : String(err);
+          process.stderr.write(`[daemon] handleRequest error: ${errMsg}\n`);
+          try {
+            socket.write(JSON.stringify({ type: "error", message: String(err instanceof Error ? err.message : err) }) + "\n");
+          } catch (writeErr) {
+            const msg = writeErr instanceof Error ? writeErr.message : String(writeErr);
+            process.stderr.write(`[daemon] failed to write error response: ${msg}\n`);
+          }
         });
       }
     });
 
-    socket.on("error", () => {
-      /* ignore client disconnects */
+    socket.on("error", (err) => {
+      // Log errors but don't crash - client may have disconnected abruptly
+      if ((err as NodeJS.ErrnoException).code !== "ECONNRESET") {
+        process.stderr.write(`[daemon] socket error: ${err.message}\n`);
+      }
     });
   });
 
-  server.listen(SOCKET_PATH, () => {
+  startServerListener(server, () => {
     // Write PID file
     fs.writeFileSync(PID_PATH, String(process.pid));
-    process.stderr.write(`tui-use daemon started (pid=${process.pid})\n`);
+    const listenTarget = process.platform === "win32" ? `port ${DAEMON_PORT}` : SOCKET_PATH;
+    process.stderr.write(`tui-use daemon started (pid=${process.pid}, listening on ${listenTarget})\n`);
   });
 
-  server.on("error", (err) => {
-    process.stderr.write(`daemon error: ${err.message}\n`);
+  server.on("error", (err: NodeJS.ErrnoException) => {
+    let message = `daemon error: ${err.message}`;
+
+    // Windows-specific error guidance
+    if (process.platform === "win32" && err.code === "EADDRINUSE") {
+      message += `\n  Port ${DAEMON_PORT} is already in use. Try:\n    tui-use daemon stop`;
+    } else if (process.platform === "win32" && err.code === "EACCES") {
+      message += `\n  Permission denied on port ${DAEMON_PORT}. Try running with elevated privileges.`;
+    }
+
+    process.stderr.write(`${message}\n`);
     process.exit(1);
   });
+
+  // Graceful shutdown: kill all sessions and clean up
+  function gracefulShutdown() {
+    for (const session of sessions.values()) {
+      try {
+        session.kill();
+      } catch {
+        /* session may already be dead */
+      }
+    }
+    process.exit(0);
+  }
 
   // Cleanup on exit
   process.on("exit", () => {
     try {
-      fs.unlinkSync(SOCKET_PATH);
+      if (process.platform !== "win32") fs.unlinkSync(SOCKET_PATH);
       fs.unlinkSync(PID_PATH);
     } catch {
       /* ignore */
     }
   });
 
+  // Signal handling (Windows: SIGTERM/SIGINT may not fire, but process can be terminated)
   for (const sig of ["SIGTERM", "SIGINT"] as const) {
-    process.on(sig, () => process.exit(0));
+    process.on(sig, gracefulShutdown);
   }
+
+  // Windows: handle uncaught exceptions gracefully
+  process.on("uncaughtException", (err) => {
+    process.stderr.write(`[daemon] uncaught exception: ${err.message}\n`);
+    gracefulShutdown();
+  });
 
   resetIdleTimer();
 }
